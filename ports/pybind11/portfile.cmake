@@ -13,22 +13,27 @@ vcpkg_from_github(
 vcpkg_find_acquire_program(PYTHON3)
 
 get_filename_component(PYPATH ${PYTHON3} PATH)
-set(ENV{PATH} "$ENV{PATH};${PYPATH}")
+set(ENV{PATH} "$ENV{PATH};${PYPATH}") #TODO: Use vcpkg_add_to_path
 
+if(VCPKG_TARGET_IS_WINDOWS)
+    set(PYTHON3_LIBS  -DPYTHON_LIBRARIES=\"optimized\\\\\\\\;${CURRENT_INSTALLED_DIR}/lib/python36.lib\\\\\\\\;debug\\\\\\\\;${CURRENT_INSTALLED_DIR}/debug/lib/python36_d.lib\"
+                      -DPYTHONLIBS_FOUND=ON
+                      -DPYTHON_INCLUDE_DIRS=${CURRENT_INSTALLED_DIR}/include)
+else()
+    set(PYTHON3_LIBS)
+endif()
 vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
     PREFER_NINJA
     OPTIONS
         -DPYBIND11_TEST=OFF
-        -DPYTHONLIBS_FOUND=ON
-        -DPYTHON_INCLUDE_DIRS=${CURRENT_INSTALLED_DIR}/include
-        -DPYTHON_MODULE_EXTENSION=.dll
+        -DPYTHON_MODULE_EXTENSION=${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}
+        ${PYTHON3_LIBS}
+        -DVCPKG_LIBTRACK_DEACTIVATE=ON
     OPTIONS_RELEASE
         -DPYTHON_IS_DEBUG=OFF
-        -DPYTHON_LIBRARIES=${CURRENT_INSTALLED_DIR}/lib/python36.lib
     OPTIONS_DEBUG
         -DPYTHON_IS_DEBUG=ON
-        -DPYTHON_LIBRARIES=${CURRENT_INSTALLED_DIR}/debug/lib/python36_d.lib
 )
 
 vcpkg_install_cmake()
