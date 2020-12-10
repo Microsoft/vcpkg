@@ -4,6 +4,7 @@ vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://git.ffmpeg.org/rtmpdump
     REF ${RTMPDUMP_REVISION}
+    SHA512 c21d8895407b087a59b264321d1605b51b09e4342bb46e772575b9ed429308373f1ac388eaacdcb3c2235c6c6243700392e217e91a0c342786a8c97313c217df
     PATCHES
         dh.patch                #Openssl 1.1.1 patch
         handshake.patch         #Openssl 1.1.1 patch

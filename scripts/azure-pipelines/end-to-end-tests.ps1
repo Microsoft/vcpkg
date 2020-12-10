@@ -36,13 +36,14 @@ $packagesRoot = Join-Path $TestingRoot 'packages'
 $NuGetRoot = Join-Path $TestingRoot 'nuget'
 $NuGetRoot2 = Join-Path $TestingRoot 'nuget2'
 $ArchiveRoot = Join-Path $TestingRoot 'archives'
+$E2ePortsRoot = Join-Path $PSScriptRoot '../e2e_ports'
 $commonArgs = @(
     "--triplet",
     $Triplet,
     "--x-buildtrees-root=$buildtreesRoot",
     "--x-install-root=$installRoot",
     "--x-packages-root=$packagesRoot",
-    "--overlay-ports=scripts/e2e_ports"
+    "--overlay-ports=$E2ePortsRoot"
 )
 $CurrentTest = 'unassigned'
 
@@ -204,7 +205,7 @@ if ((Get-ChildItem $NuGetRoot -Filter '*.nupkg' | Measure-Object).Count -ne 1) {
 }
 
 # Test that prohibiting backcompat features actually prohibits
-$backcompatFeaturePorts = @('vcpkg-uses-test-cmake', 'vcpkg-uses-vcpkg-common-functions')
+$backcompatFeaturePorts = @('vcpkg-uses-test-cmake', 'vcpkg-uses-vcpkg-common-functions', 'vcpkg-uses-git-without-sha')
 foreach ($backcompatFeaturePort in $backcompatFeaturePorts) {
     $succeedArgs = $commonArgs + @('install',$backcompatFeaturePort,'--no-binarycaching')
     $failArgs = $succeedArgs + @('--x-prohibit-backcompat-features')
