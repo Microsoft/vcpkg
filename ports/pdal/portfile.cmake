@@ -1,35 +1,17 @@
-set(PDAL_VERSION_STR "1.7.1")
+set(PDAL_VERSION_STR "2.2.0")
 
-vcpkg_download_distfile(ARCHIVE
-    URLS "http://download.osgeo.org/pdal/PDAL-${PDAL_VERSION_STR}-src.tar.gz"
-    FILENAME "PDAL-${PDAL_VERSION_STR}-src.tar.gz"
-    SHA512 e3e63bb05930c1a28c4f46c7edfaa8e9ea20484f1888d845b660a29a76f1dd1daea3db30a98607be0c2eeb86930ec8bfd0965d5d7d84b07a4fe4cb4512da9b09
-)
-
-vcpkg_extract_source_archive_ex(
-    ARCHIVE ${ARCHIVE}
+vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
+    REPO PDAL/PDAL
+    REF 2.2.0
+    SHA512 26acd2197df3083e1f2de705beb9a5fede1b5a10cdf3c6c0e161c5fc64ed71c70f2f487f6a28b5198959b39885a0f691bf306cdab940de8002058a23ec16982e
     PATCHES
-        0001-win32_compiler_options.cmake.patch
-        0002-no-source-dir-writes.patch
-        0003-fix-copy-vendor.patch
-        fix-dependency.patch
-        libpq.patch
-        fix-CPL_DLL.patch
-        0004-fix-const-overloaded.patch
+        reimplement-patch-172-in-220.patch
 )
-
-file(REMOVE "${SOURCE_PATH}/pdal/gitsha.cpp")
 
 # Deploy custom CMake modules to enforce expected dependencies look-up
-foreach(_module IN ITEMS FindGDAL FindGEOS FindGeoTIFF FindCurl)  # Outdated; Supplied by CMake
+foreach(_module IN ITEMS FindGDAL FindGeoTIFF FindCurl)  # Outdated; Supplied by CMake
     file(REMOVE "${SOURCE_PATH}/cmake/modules/${_module}.cmake")
-endforeach()
-foreach(_module IN ITEMS FindGEOS)  # Overwritten Modules.
-    file(REMOVE "${SOURCE_PATH}/cmake/modules/${_module}.cmake")
-    file(COPY ${CMAKE_CURRENT_LIST_DIR}/${_module}.cmake
-        DESTINATION ${SOURCE_PATH}/cmake/modules/
-    )
 endforeach()
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
@@ -50,7 +32,7 @@ vcpkg_configure_cmake(
 )
 
 vcpkg_install_cmake(ADD_BIN_TO_PATH)
-vcpkg_fixup_cmake_targets(CONFIG_PATH lib/pdal/cmake)
+vcpkg_fixup_cmake_targets(CONFIG_PATH lib/cmake/pdal)
 vcpkg_copy_pdbs()
 
 # Install PDAL executable
@@ -65,7 +47,13 @@ file(REMOVE_RECURSE
     ${CURRENT_PACKAGES_DIR}/debug/lib/pdal
     ${CURRENT_PACKAGES_DIR}/debug/include
     ${CURRENT_PACKAGES_DIR}/debug/share
+
+    # These are intentionally? empty
+    ${CURRENT_PACKAGES_DIR}/include/pdal/filters/private/csf
+    ${CURRENT_PACKAGES_DIR}/include/pdal/filters/private/miniball
 )
+
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/a/dir" "${CURRENT_PACKAGES_DIR}/some/other/dir")
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL static)
     file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/bin ${CURRENT_PACKAGES_DIR}/bin)
