@@ -227,6 +227,9 @@ function(vcpkg_configure_cmake)
         endif()
     endif()
 
+    if(EXISTS ${_CURRENT_SOURCELINK_FILE})
+        list(APPEND _csc_OPTIONS "-DVCPKG_SOURCELINK_FILE=${_CURRENT_SOURCELINK_FILE}")
+    endif()
 
     list(APPEND _csc_OPTIONS
         "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${VCPKG_CHAINLOAD_TOOLCHAIN_FILE}"

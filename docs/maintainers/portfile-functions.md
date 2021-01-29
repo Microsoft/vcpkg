@@ -56,3 +56,4 @@
 - [vcpkg\_minimum\_required](vcpkg_minimum_required.md)
 - [vcpkg\_prettify\_command](vcpkg_prettify_command.md)
 - [vcpkg\_replace\_string](vcpkg_replace_string.md)
+- [vcpkg\_write\_sourcelink\_file](vcpkg_write_sourcelink_file.md)

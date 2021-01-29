@@ -158,6 +158,11 @@ function(vcpkg_from_github)
             PATCHES ${_vdud_PATCHES}
         )
 
+        vcpkg_write_sourcelink_file(
+            SOURCE_PATH "${SOURCE_PATH}/*"
+            SERVER_PATH "https://raw.githubusercontent.com/${ORG_NAME}/${REPO_NAME}/${_vdud_REF}/*"
+        )
+
         set(${_vdud_OUT_SOURCE_PATH} "${SOURCE_PATH}" PARENT_SCOPE)
         return()
     endif()
@@ -227,5 +232,11 @@ function(vcpkg_from_github)
         WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}/src/head"
         PATCHES ${_vdud_PATCHES}
     )
+
+    vcpkg_write_sourcelink_file(
+        SOURCE_PATH "${SOURCE_PATH}/*"
+        SERVER_PATH "https://raw.githubusercontent.com/${ORG_NAME}/${REPO_NAME}/${_version}/*"
+    )
+
     set(${_vdud_OUT_SOURCE_PATH} "${SOURCE_PATH}" PARENT_SCOPE)
 endfunction()

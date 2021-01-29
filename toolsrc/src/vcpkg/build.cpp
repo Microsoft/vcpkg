@@ -1027,6 +1027,8 @@ namespace vcpkg::Build
             }
         }
 
+        abi_tag_entries.emplace_back("sourcelink", "6");
+
         abi_tag_entries.emplace_back("post_build_checks", "2");
         std::vector<std::string> sorted_feature_list = action.feature_list;
         Util::sort(sorted_feature_list);
