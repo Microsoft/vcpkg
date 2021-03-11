@@ -1,0 +1,25 @@
+From eeddd90ba6f38d0902a3e14fe9e05c6caf37e8c9 Mon Sep 17 00:00:00 2001
+From: DengJun <dengjun@sogou-inc.com>
+Date: Tue, 2 Feb 2021 15:50:57 +0800
+Subject: [PATCH] fix bin error
+
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ffd976e..bf174ce 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -60,7 +60,7 @@ configure_package_config_file(
+ 
+ set(CONFIG_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR})
+ set(CONFIG_LIB_DIR ${CMAKE_INSTALL_LIBDIR})
+-set(CONFIG_BIN_DIR ${CMAKE_INSTALL_BINDIR})
++set(CONFIG_BIN_DIR ${CMAKE_INSTALL_PREFIX}/tools/srpc)
+ configure_package_config_file(
+ 	${PROJECT_NAME}-config.cmake.in
+ 	${CMAKE_CONFIG_INSTALL_FILE}
+-- 
+2.28.0.windows.1
+

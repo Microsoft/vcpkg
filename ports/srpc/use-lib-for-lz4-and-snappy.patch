@@ -1,0 +1,92 @@
+From 22e92d0b89c919da99d07c75f21f0d33c6c139af Mon Sep 17 00:00:00 2001
+From: DengJun <dengjun@sogou-inc.com>
+Date: Tue, 2 Feb 2021 13:51:00 +0800
+Subject: [PATCH] use lib for lz4 and snappy
+
+---
+ CMakeLists_Headers.txt      |  6 ------
+ src/CMakeLists.txt          |  8 ++++----
+ src/compress/CMakeLists.txt | 27 ++-------------------------
+ 3 files changed, 6 insertions(+), 35 deletions(-)
+
+diff --git a/CMakeLists_Headers.txt b/CMakeLists_Headers.txt
+index 2e418c7..8b75f29 100644
+--- a/CMakeLists_Headers.txt
++++ b/CMakeLists_Headers.txt
+@@ -26,11 +26,5 @@ set(INCLUDE_HEADERS
+ 	src/rpc_define.h
+ 	src/rpc_span.h
+ 	src/rpc_span_policies.h
+-	third_party/snappy/snappy.h
+-	third_party/snappy/snappy-c.h
+-	third_party/snappy/snappy-sinksource.h
+-	third_party/snappy/snappy-stubs-public.h
+-	third_party/lz4/lib/lz4.h
+-	third_party/lz4/lib/lz4frame.h
+ )
+ 
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 37299be..564ab07 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -24,11 +24,11 @@ if (WIN32)
+ else ()
+ 	set (HAVE_SYS_UIO_H_01 true)
+ endif ()
+-set(SNAPPY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/snappy)
+-configure_file(${SNAPPY_DIR}/cmake/config.h.in ${SNAPPY_DIR}/config.h)
+-configure_file(${SNAPPY_DIR}/snappy-stubs-public.h.in ${SNAPPY_DIR}/snappy-stubs-public.h)
++# set(SNAPPY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/snappy)
++# configure_file(${SNAPPY_DIR}/cmake/config.h.in ${SNAPPY_DIR}/config.h)
++# configure_file(${SNAPPY_DIR}/snappy-stubs-public.h.in ${SNAPPY_DIR}/snappy-stubs-public.h)
+ #find_package(Workflow REQUIRED CONFIG HINTS /usr/lib64/cmake/workflow)
+-find_package(Workflow REQUIRED CONFIG HINTS ../workflow)
++find_package(Workflow REQUIRED CONFIG)
+ 
+ include_directories(
+ 	${OPENSSL_INCLUDE_DIR}
+diff --git a/src/compress/CMakeLists.txt b/src/compress/CMakeLists.txt
+index ed64453..c55005a 100644
+--- a/src/compress/CMakeLists.txt
++++ b/src/compress/CMakeLists.txt
+@@ -6,35 +6,12 @@ set(SRC
+ 	rpc_compress_snappy.cc
+ )
+ 
+-set(SNAPPY_SRC
+-	../../third_party/snappy/config.h
+-	../../third_party/snappy/snappy-internal.h
+-	../../third_party/snappy/snappy-sinksource.cc
+-	../../third_party/snappy/snappy-sinksource.h
+-	../../third_party/snappy/snappy-stubs-internal.cc
+-	../../third_party/snappy/snappy-stubs-internal.h
+-	../../third_party/snappy/snappy-stubs-public.h
+-	../../third_party/snappy/snappy.cc
+-	../../third_party/snappy/snappy.h
+-)
+-
+-set(LZ4_SRC
+-	../../third_party/lz4/lib/lz4.c
+-	../../third_party/lz4/lib/lz4.h
+-	../../third_party/lz4/lib/lz4hc.h
+-	../../third_party/lz4/lib/lz4hc.c
+-	../../third_party/lz4/lib/lz4frame.h
+-	../../third_party/lz4/lib/lz4frame.c
+-	../../third_party/lz4/lib/xxhash.c
+-	../../third_party/lz4/lib/xxhash.h
+-)
+-
+ add_library(
+ 	${PROJECT_NAME} OBJECT
+ 	${SRC}
+-	${SNAPPY_SRC}
+-	${LZ4_SRC}
+ )
+ 
++target_link_libraries(${PROJECT_NAME} lz4 snappy)
++
+ #add_library(${PROJECT_NAME} OBJECT ${SRC})
+ 
+-- 
+2.28.0.windows.1
+
