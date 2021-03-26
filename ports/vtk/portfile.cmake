@@ -63,6 +63,11 @@ if("paraview" IN_LIST FEATURES)
             -DVTK_MODULE_ENABLE_VTK_RenderingMatplotlib=YES
         )
     endif()
+    if("mpi" IN_LIST FEATURES)
+        list(APPEND ADDITIONAL_OPTIONS
+            -DVTK_MODULE_ENABLE_VTK_FiltersParallelFlowPaths=YES
+        )
+    endif()
 endif()
 
 if("mpi" IN_LIST FEATURES)
@@ -307,6 +312,9 @@ if("paraview" IN_LIST FEATURES)
     file(INSTALL "${SOURCE_PATH}/Filters/Statistics/vtkStatisticsAlgorithmPrivate.h" DESTINATION "${CURRENT_PACKAGES_DIR}/include/vtk-${VTK_SHORT_VERSION}")
     file(INSTALL "${SOURCE_PATH}/Rendering/OpenGL2/vtkCompositePolyDataMapper2Internal.h" DESTINATION "${CURRENT_PACKAGES_DIR}/include/vtk-${VTK_SHORT_VERSION}")
     file(INSTALL "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/Rendering/OpenGL2/vtkTextureObjectVS.h" DESTINATION "${CURRENT_PACKAGES_DIR}/include/vtk-${VTK_SHORT_VERSION}")
+    if("mpi" IN_LIST FEATURES)
+        file(INSTALL "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/Rendering/Parallel/vtkCompositeZPassFS.h" DESTINATION "${CURRENT_PACKAGES_DIR}/include/vtk-${VTK_SHORT_VERSION}")
+    endif()
 endif()
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
