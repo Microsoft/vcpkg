@@ -1,0 +1,80 @@
+{
+  "name": "libtorch",
+  "version-string": "v1.7.1",
+  "description": "Tensors and Dynamic neural networks in Python with strong GPU acceleration",
+  "homepage": "https://pytorch.org/",
+  "supports": "x64 & windows & osx & linux",
+  "dependencies": [
+    "cpuinfo",
+    "eigen3",
+    "fbgemm",
+    "fp16",
+    "gflags",
+    "glog",
+    "leveldb",
+    "lmdb",
+    "protobuf",
+    "zstd"
+  ],
+  "default-features": [
+    "xnnpack"
+  ],
+  "features": {
+    "cuda": {
+      "description": "Build with NVIDIA CUDA GPU backend",
+      "dependencies": [
+        "cuda",
+        "cudnn"
+      ]
+    },
+    "metal": {
+      "description": "(iOS) Build with Metal GPU backend"
+    },
+    "nnpack": {
+      "description": "Build with NNPack",
+      "dependencies": [
+        "nnpack"
+      ]
+    },
+    "opencl": {
+      "description": "Build with OpenCL",
+      "dependencies": [
+        "opencl"
+      ]
+    },
+    "opencv3": {
+      "description": "Build with OpenCV 3.x",
+      "dependencies": [
+        "opencv3"
+      ]
+    },
+    "python3": {
+      "description": "Enable support of the Python3 and NumPy"
+    },
+    "qnnpack": {
+      "description": "Build with QNNPack",
+      "dependencies": [
+        "qnnpack"
+      ]
+    },
+    "tbb": {
+      "description": "Build with Intel TBB",
+      "dependencies": [
+        "tbb"
+      ]
+    },
+    "vulkan": {
+      "description": "Build with Vulkan GPU backend",
+      "dependencies": [
+        "shaderc",
+        "vulkan"
+      ]
+    },
+    "xnnpack": {
+      "description": "Build with XNNPack",
+      "dependencies": [
+        "xnnpack"
+      ]
+    }
+  }
+}
