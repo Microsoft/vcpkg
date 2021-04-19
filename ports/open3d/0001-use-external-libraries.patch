@@ -1,0 +1,221 @@
+diff --git a/3rdparty/find_dependencies.cmake b/3rdparty/find_dependencies.cmake
+index 04c3044..3018bda 100644
+--- a/3rdparty/find_dependencies.cmake
++++ b/3rdparty/find_dependencies.cmake
+@@ -293,15 +293,8 @@ find_package(Threads REQUIRED)
+ list(APPEND Open3D_3RDPARTY_EXTERNAL_MODULES "Threads")
+ 
+ # Assimp
+-message(STATUS "Building library Assimp from source")
+-include(${Open3D_3RDPARTY_DIR}/assimp/assimp.cmake)
+-import_3rdparty_library(3rdparty_assimp
+-    INCLUDE_DIRS ${ASSIMP_INCLUDE_DIR}
+-    LIB_DIR      ${ASSIMP_LIB_DIR}
+-    LIBRARIES    ${ASSIMP_LIBRARIES}
+-)
+-set(ASSIMP_TARGET "3rdparty_assimp")
+-add_dependencies(3rdparty_assimp ext_assimp)
++find_package(assimp CONFIG REQUIRED)
++set(ASSIMP_TARGET "assimp::assimp")
+ list(APPEND Open3D_3RDPARTY_PRIVATE_TARGETS "${ASSIMP_TARGET}")
+ 
+ # OpenMP
+@@ -340,7 +333,7 @@ endif()
+ 
+ # Eigen3
+ if(USE_SYSTEM_EIGEN3)
+-    find_package(Eigen3)
++    find_package(Eigen3 CONFIG REQUIRED)
+     if(TARGET Eigen3::Eigen)
+         message(STATUS "Using installed third-party library Eigen3 ${EIGEN3_VERSION_STRING}")
+         # Eigen3 is a publicly visible dependency, so add it to the list of
+@@ -359,18 +352,15 @@ endif()
+ list(APPEND Open3D_3RDPARTY_PUBLIC_TARGETS "${EIGEN3_TARGET}")
+ 
+ # Flann
+-if(USE_SYSTEM_FLANN)
+-    pkg_config_3rdparty_library(3rdparty_flann flann)
+-endif()
+-if(NOT USE_SYSTEM_FLANN OR NOT 3rdparty_flann_FOUND)
+-    build_3rdparty_library(3rdparty_flann DIRECTORY flann)
+-endif()
+-set(FLANN_TARGET "3rdparty_flann")
++find_package(flann CONFIG REQUIRED)
++set(FLANN_TARGET "flann::flann_cpp")
++list(APPEND Open3D_3RDPARTY_PRIVATE_TARGETS "flann::flann")
+ list(APPEND Open3D_3RDPARTY_PRIVATE_TARGETS "${FLANN_TARGET}")
+ 
++
+ # Nanoflann
+-build_3rdparty_library(3rdparty_nanoflann DIRECTORY nanoflann INCLUDE_DIRS include/ INCLUDE_ALL)
+-set(NANOFLANN_TARGET "3rdparty_nanoflann")
++find_package(nanoflann CONFIG REQUIRED)
++set(NANOFLANN_TARGET "nanoflann::nanoflann")
+ list(APPEND Open3D_3RDPARTY_PRIVATE_TARGETS "${NANOFLANN_TARGET}")
+ 
+ # GLEW
+@@ -612,29 +602,15 @@ set(TINYFILEDIALOGS_TARGET "3rdparty_tinyfiledialogs")
+ list(APPEND Open3D_3RDPARTY_PRIVATE_TARGETS "${TINYFILEDIALOGS_TARGET}")
+ 
+ # tinygltf
+-if(USE_SYSTEM_TINYGLTF)
+-    find_package(TinyGLTF)
+-    if(TARGET TinyGLTF::TinyGLTF)
+-        message(STATUS "Using installed third-party library TinyGLTF")
+-        if(NOT BUILD_SHARED_LIBS)
+-            list(APPEND Open3D_3RDPARTY_EXTERNAL_MODULES "TinyGLTF")
+-        endif()
+-        set(TINYGLTF_TARGET "TinyGLTF::TinyGLTF")
+-    else()
+-        message(STATUS "Unable to find installed third-party library TinyGLTF")
+-        set(USE_SYSTEM_TINYGLTF OFF)
+-    endif()
+-endif()
+-if(NOT USE_SYSTEM_TINYGLTF)
+-    build_3rdparty_library(3rdparty_tinygltf DIRECTORY tinygltf INCLUDE_DIRS tinygltf/)
+-    target_compile_definitions(3rdparty_tinygltf INTERFACE TINYGLTF_IMPLEMENTATION STB_IMAGE_IMPLEMENTATION STB_IMAGE_WRITE_IMPLEMENTATION)
+-    set(TINYGLTF_TARGET "3rdparty_tinygltf")
+-endif()
++find_path(TINYGLTF_INCLUDE_DIRS "tiny_gltf.h")
++build_3rdparty_library(3rdparty_tinygltf DIRECTORY tinygltf INCLUDE_DIRS ${TINYGLTF_INCLUDE_DIRS})
++target_compile_definitions(3rdparty_tinygltf INTERFACE TINYGLTF_IMPLEMENTATION STB_IMAGE_IMPLEMENTATION STB_IMAGE_WRITE_IMPLEMENTATION)
++set(TINYGLTF_TARGET "3rdparty_tinygltf")
+ list(APPEND Open3D_3RDPARTY_PRIVATE_TARGETS "${TINYGLTF_TARGET}")
+ 
+ # tinyobjloader
+ if(USE_SYSTEM_TINYOBJLOADER)
+-    find_package(tinyobjloader)
++    find_package(tinyobjloader CONFIG REQUIRED)
+     if(TARGET tinyobjloader::tinyobjloader)
+         message(STATUS "Using installed third-party library tinyobjloader")
+         if(NOT BUILD_SHARED_LIBS)
+@@ -655,9 +631,11 @@ list(APPEND Open3D_3RDPARTY_PRIVATE_TARGETS "${TINYOBJLOADER_TARGET}")
+ 
+ # Qhull
+ if(USE_SYSTEM_QHULL)
+-    find_package(Qhull)
++    find_package(Qhull CONFIG REQUIRED)
+     if(TARGET Qhull::qhullcpp)
+         message(STATUS "Using installed third-party library Qhull")
++        list(APPEND Open3D_3RDPARTY_PRIVATE_TARGETS "Qhull::qhullstatic")
++        list(APPEND Open3D_3RDPARTY_PRIVATE_TARGETS "Qhull::qhullstatic_r")
+         if(NOT BUILD_SHARED_LIBS)
+             list(APPEND Open3D_3RDPARTY_EXTERNAL_MODULES "Qhull")
+         endif()
+@@ -834,13 +812,13 @@ endif()
+ # imgui
+ if(BUILD_GUI)
+     if(USE_SYSTEM_IMGUI)
+-        find_package(ImGui)
+-        if(TARGET ImGui::ImGui)
++        find_package(imgui CONFIG REQUIRED)
++        if(TARGET imgui::imgui)
+             message(STATUS "Using installed third-party library ImGui")
+             if(NOT BUILD_SHARED_LIBS)
+                 list(APPEND Open3D_3RDPARTY_EXTERNAL_MODULES "ImGui")
+             endif()
+-            set(IMGUI_TARGET "ImGui::ImGui")
++            set(IMGUI_TARGET "imgui::imgui")
+         else()
+             message(STATUS "Unable to find installed third-party library ImGui")
+             set(USE_SYSTEM_IMGUI OFF)
+@@ -966,6 +944,9 @@ if(BUILD_GUI)
+         add_dependencies(3rdparty_filament ext_filament)
+     endif()
+     set(FILAMENT_TARGET "3rdparty_filament")
++    #find_package(filament CONFIG REQUIRED)
++    #set(FILAMENT_MATC "${VCPKG_CURRENT_INSTALLED_DIR}/filament/matc")
++    #set(FILAMENT_TARGET "google::filament")
+     list(APPEND Open3D_3RDPARTY_PRIVATE_TARGETS "${FILAMENT_TARGET}")
+ endif()
+ 
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7d280e6..990b370 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -154,10 +154,6 @@ string(CONCAT OPEN3D_VERSION
+     ".${OPEN3D_VERSION_PATCH}"
+ )
+ set(OPEN3D_VERSION_FULL "${OPEN3D_VERSION}${OPEN3D_VERSION_DEVHASH}")
+-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in
+-    ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile @ONLY)
+-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/getting_started.rst.in
+-    ${CMAKE_CURRENT_SOURCE_DIR}/docs/getting_started.rst @ONLY)
+ 
+ project(Open3D VERSION ${OPEN3D_VERSION} LANGUAGES C CXX)
+ message(STATUS "Open3D ${OPEN3D_VERSION_FULL}")
+diff --git a/cpp/open3d/geometry/SurfaceReconstructionPoisson.cpp b/cpp/open3d/geometry/SurfaceReconstructionPoisson.cpp
+index 8d90440..61b67f1 100644
+--- a/cpp/open3d/geometry/SurfaceReconstructionPoisson.cpp
++++ b/cpp/open3d/geometry/SurfaceReconstructionPoisson.cpp
+@@ -37,12 +37,12 @@
+ #include "open3d/utility/Console.h"
+ 
+ // clang-format off
+-#include "PoissonRecon/Src/PreProcessor.h"
+-#include "PoissonRecon/Src/MyMiscellany.h"
+-#include "PoissonRecon/Src/CmdLineParser.h"
+-#include "PoissonRecon/Src/FEMTree.h"
+-#include "PoissonRecon/Src/PPolynomial.h"
+-#include "PoissonRecon/Src/PointStreamData.h"
++#include "PoissonRecon/PreProcessor.h"
++#include "PoissonRecon/MyMiscellany.h"
++#include "PoissonRecon/CmdLineParser.h"
++#include "PoissonRecon/FEMTree.h"
++#include "PoissonRecon/PPolynomial.h"
++#include "PoissonRecon/PointStreamData.h"
+ // clang-format on
+ 
+ namespace open3d {
+diff --git a/cpp/open3d/ml/pytorch/CMakeLists.txt b/cpp/open3d/ml/pytorch/CMakeLists.txt
+index 815412d..7eae5bf 100644
+--- a/cpp/open3d/ml/pytorch/CMakeLists.txt
++++ b/cpp/open3d/ml/pytorch/CMakeLists.txt
+@@ -101,7 +101,7 @@ target_include_directories(open3d_torch_ops SYSTEM PRIVATE
+ )
+ 
+ target_link_libraries(open3d_torch_ops PRIVATE
+-    3rdparty_tbb
++    ${TBB_TARGET}
+     torch_cpu
+     ${EIGEN3_TARGET}
+     ${FMT_TARGET}
+diff --git a/cpp/open3d/ml/tensorflow/CMakeLists.txt b/cpp/open3d/ml/tensorflow/CMakeLists.txt
+index 067dc19..ce50932 100644
+--- a/cpp/open3d/ml/tensorflow/CMakeLists.txt
++++ b/cpp/open3d/ml/tensorflow/CMakeLists.txt
+@@ -123,7 +123,7 @@ target_include_directories(open3d_tf_ops SYSTEM PRIVATE
+ )
+ 
+ target_link_libraries(open3d_tf_ops PRIVATE
+-    3rdparty_tbb
++    ${TBB_TARGET}
+     ${Tensorflow_FRAMEWORK_LIB}
+     ${FMT_TARGET}
+ )
+diff --git a/cpp/open3d/visualization/gui/Menu.cpp b/cpp/open3d/visualization/gui/Menu.cpp
+index 0d299af..c84a477 100644
+--- a/cpp/open3d/visualization/gui/Menu.cpp
++++ b/cpp/open3d/visualization/gui/Menu.cpp
+@@ -268,7 +268,7 @@ Menu::ItemId Menu::Draw(const DrawContext &context,
+     int width = padding + name_width + 2 * em + shortcut_width + 2 * em +
+                 int(std::ceil(1.5 * em)) + padding;  // checkbox
+ 
+-    ImGui::SetNextWindowContentWidth(float(width));
++    ImGui::SetNextWindowContentSize(ImVec2(float(width), 0.0f));
+     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,
+                         ImVec2(0, float(context.theme.default_margin)));
+     ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding,
+diff --git a/cpp/open3d/visualization/gui/VectorEdit.cpp b/cpp/open3d/visualization/gui/VectorEdit.cpp
+index 5b5b17d..414ab0f 100644
+--- a/cpp/open3d/visualization/gui/VectorEdit.cpp
++++ b/cpp/open3d/visualization/gui/VectorEdit.cpp
+@@ -96,7 +96,7 @@ Widget::DrawResult VectorEdit::Draw(const DrawContext& context) {
+     auto result = Widget::DrawResult::NONE;
+     DrawImGuiPushEnabledState();
+     ImGui::PushItemWidth(float(GetFrame().width));
+-    if (ImGui::InputFloat3(impl_->id_.c_str(), impl_->value_.data(), 3)) {
++    if (ImGui::InputFloat3(impl_->id_.c_str(), impl_->value_.data(), "%.3f")) {
+         result = Widget::DrawResult::REDRAW;
+     }
+     ImGui::PopItemWidth();
