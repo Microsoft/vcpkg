@@ -1,15 +1,26 @@
 {
   "name": "gettext",
   "version": "0.21",
-  "port-version": 1,
+  "port-version": 2,
   "description": "The GNU gettext utilities are a set of tools that provides a framework to help other GNU packages produce multi-lingual messages. Provides libintl.",
   "homepage": "https://www.gnu.org/software/gettext/",
   "dependencies": [
     "libiconv"
   ],
   "features": {
+    "autopoint": {
+      "description": "Build autopoint tool"
+    },
     "tools": {
-      "description": "Build gettext tools"
+      "description": "Build gettext tools",
+      "dependencies": [
+        {
+          "name": "gettext",
+          "features": [
+            "autopoint"
+          ]
+        }
+      ]
     }
   }
 }
