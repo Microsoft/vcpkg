@@ -6282,7 +6282,7 @@
     },
     "v8": {
       "baseline": "9.0.257.17",
-      "port-version": 1
+      "port-version": 2
     },
     "valijson": {
       "baseline": "2018-11-17-1",
