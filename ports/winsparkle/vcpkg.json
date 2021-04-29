@@ -1,6 +1,6 @@
 {
   "name": "winsparkle",
-  "version-string": "0.7.0",
+  "version": "0.7.0",
   "homepage": "https://winsparkle.org",
   "description": "WinSparkle is an easy-to-use software update library for Windows developers.",
   "supports: "windows"
