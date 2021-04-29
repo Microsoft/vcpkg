@@ -1,4 +1,4 @@
-vcpkg_fail_port_install(MESSAGE "winsparkle only supports Windows platforms" ON_TARGET "osx" "linux")
+vcpkg_fail_port_install(MESSAGE "winsparkle only supports Windows platforms" ON_TARGET "osx" "linux" "uwp")
 
 vcpkg_download_distfile(ARCHIVE
     URLS "https://github.com/vslavik/winsparkle/releases/download/v0.7.0/WinSparkle-0.7.0-src.zip"
