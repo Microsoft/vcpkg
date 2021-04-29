@@ -9,8 +9,6 @@ vcpkg_download_distfile(ARCHIVE
 vcpkg_extract_source_archive_ex(
     OUT_SOURCE_PATH SOURCE_PATH
     ARCHIVE ${ARCHIVE}
-    #PATCHES
-    #   system-wxwidgets.patch
 )
 
 # build and install 
@@ -18,9 +16,9 @@ vcpkg_install_msbuild(
     SOURCE_PATH "${SOURCE_PATH}"
     PROJECT_SUBPATH "WinSparkle-2017.sln"
     PLATFORM ${BUILD_ARCH}
-	TARGET_PLATFORM_VERSION ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}
-	PLATFORM_TOOLSET ${VCPKG_PLATFORM_TOOLSET}
-	OPTIONS /t:restore /p:RestorePackagesConfig=true
+    TARGET_PLATFORM_VERSION ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}
+    PLATFORM_TOOLSET ${VCPKG_PLATFORM_TOOLSET}
+    OPTIONS /t:restore /p:RestorePackagesConfig=true
     USE_VCPKG_INTEGRATION
 )
 
