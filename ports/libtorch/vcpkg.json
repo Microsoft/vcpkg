@@ -1,19 +1,31 @@
 {
   "name": "libtorch",
-  "version-string": "v1.7.1",
+  "version-string": "v1.8.1",
   "description": "Tensors and Dynamic neural networks in Python with strong GPU acceleration",
   "homepage": "https://pytorch.org/",
-  "supports": "x64 & windows & osx & linux",
+  "supports": "x64 & (windows | osx | linux)",
   "dependencies": [
     "cpuinfo",
     "eigen3",
     "fbgemm",
+    "fmt",
     "fp16",
     "gflags",
     "glog",
-    "leveldb",
     "lmdb",
     "protobuf",
+    {
+      "name": "tensorpipe",
+      "platform": "linux | osx"
+    },
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
     "zstd"
   ],
   "default-features": [
@@ -25,6 +37,13 @@
       "dependencies": [
         "cuda",
         "cudnn"
+      ]
+    },
+    "leveldb": {
+      "description": "Build with LevelDB",
+      "dependencies":[
+        "leveldb",
+        "snappy"    
       ]
     },
     "metal": {
@@ -48,9 +67,6 @@
         "opencv3"
       ]
     },
-    "python3": {
-      "description": "Enable support of the Python3 and NumPy"
-    },
     "qnnpack": {
       "description": "Build with QNNPack",
       "dependencies": [
@@ -66,7 +82,6 @@
     "vulkan": {
       "description": "Build with Vulkan GPU backend",
       "dependencies": [
-        "shaderc",
         "vulkan"
       ]
     },
