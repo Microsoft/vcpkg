@@ -1,0 +1,345 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 24d3c9b..37d67cb 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -538,15 +538,12 @@ endif()
+ # The below means we are cross compiling for arm64 or x86_64 on MacOSX
+ if(NOT IOS AND CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND CMAKE_OSX_ARCHITECTURES MATCHES "^(x86_64|arm64)$")
+   set(CROSS_COMPILING_MACOSX TRUE)
+-  # We need to compile a universal protoc to not fail protobuf build
+-  execute_process(COMMAND ./scripts/build_host_protoc.sh --other-flags "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64"
+-                  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+-                  RESULT_VARIABLE BUILD_HOST_PROTOC_RESULT)
+-  if(NOT BUILD_HOST_PROTOC_RESULT EQUAL "0")
+-    message(FATAL_ERROR "Could not compile universal protoc.")
+-  endif()
+-  set(PROTOBUF_PROTOC_EXECUTABLE "${PROJECT_SOURCE_DIR}/build_host_protoc/bin/protoc")
+-  set(CAFFE2_CUSTOM_PROTOC_EXECUTABLE "${PROJECT_SOURCE_DIR}/build_host_protoc/bin/protoc")
++  find_package(protobuf CONFIG REQUIRED)
++  find_program(PROTOBUF_PROTOC_EXECUTABLE
++      NAMES   protoc
++      PATHS   ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools
++  )
++  set(CAFFE2_CUSTOM_PROTOC_EXECUTABLE ${PROTOBUF_PROTOC_EXECUTABLE})
+ endif()
+ 
+ # ---[ Misc checks to cope with various compiler modes
+@@ -561,6 +558,11 @@ if(USE_FBGEMM AND ((CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND CMAKE_SIZEOF_VO
+   set(USE_FBGEMM OFF)
+ endif()
+ 
++# we will import vcpkg ports instead of CAFFE2_THIRD_PARTY_ROOT
++find_path(FP16_INCLUDE_DIRS "fp16.h")
++find_path(PSIMD_INCLUDE_DIRS "psimd.h")
++find_path(FXDIV_INCLUDE_DIRS "fxdiv.h")
++find_package(asmjit CONFIG REQUIRED) # asmjit::asmjit (required by fbgemm)
+ include(cmake/Dependencies.cmake)
+ 
+ if(USE_FBGEMM)
+diff --git a/caffe2/CMakeLists.txt b/caffe2/CMakeLists.txt
+index 7bef849..cee33af 100644
+--- a/caffe2/CMakeLists.txt
++++ b/caffe2/CMakeLists.txt
+@@ -99,13 +99,14 @@ endif()
+ # addressed yet.
+ 
+ if(NOT MSVC AND USE_XNNPACK)
+-  if(NOT TARGET fxdiv)
+-    set(FXDIV_BUILD_TESTS OFF CACHE BOOL "")
+-    set(FXDIV_BUILD_BENCHMARKS OFF CACHE BOOL "")
+-    add_subdirectory(
+-      "${FXDIV_SOURCE_DIR}"
+-      "${CMAKE_BINARY_DIR}/FXdiv")
+-  endif()
++
++  # if(NOT TARGET fxdiv)
++  #   set(FXDIV_BUILD_TESTS OFF CACHE BOOL "")
++  #   set(FXDIV_BUILD_BENCHMARKS OFF CACHE BOOL "")
++  #   add_subdirectory(
++  #     "${FXDIV_SOURCE_DIR}"
++  #     "${CMAKE_BINARY_DIR}/FXdiv")
++  # endif()
+ endif()
+ 
+ add_subdirectory(core)
+@@ -856,7 +857,7 @@ if(USE_CUDA OR USE_ROCM)
+ endif()
+ 
+ if(NOT MSVC AND USE_XNNPACK)
+-  TARGET_LINK_LIBRARIES(torch_cpu PRIVATE fxdiv)
++  target_include_directories(torch_cpu PRIVATE ${FXDIV_INCLUDE_DIRS})
+ endif()
+ 
+ # ==========================================================
+diff --git a/cmake/Dependencies.cmake b/cmake/Dependencies.cmake
+index 06464e7..0fdd3e3 100644
+--- a/cmake/Dependencies.cmake
++++ b/cmake/Dependencies.cmake
+@@ -82,7 +82,8 @@ else()
+       "Cannot find threading library. Caffe2 requires Threads to compile.")
+ endif()
+ 
+-if(USE_TBB)
++find_package(TBB CONFIG REQUIRED) # TBB::tbb
++if(FALSE)
+   message(STATUS "Compiling TBB from source")
+   # Unset our restrictive C++ flags here and reset them later.
+   # Remove this once we use proper target_compile_options.
+@@ -312,46 +313,14 @@ if(INTERN_BUILD_MOBILE OR NOT DISABLE_NNPACK_AND_FAMILY)
+   set(USE_PTHREADPOOL ON CACHE BOOL "" FORCE)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_PTHREADPOOL")
+ 
+-  # Always use third_party/pthreadpool.
+-  set(USE_INTERNAL_PTHREADPOOL_IMPL OFF CACHE BOOL "" FORCE)
+-
+-  if(NOT TARGET pthreadpool)
+-    if(USE_SYSTEM_PTHREADPOOL)
+-      add_library(pthreadpool SHARED IMPORTED)
+-      find_library(PTHREADPOOL_LIBRARY pthreadpool)
+-      set_property(TARGET pthreadpool PROPERTY IMPORTED_LOCATION "${PTHREADPOOL_LIBRARY}")
+-      if(NOT PTHREADPOOL_LIBRARY)
+-        message(FATAL_ERROR "Cannot find pthreadpool")
+-      endif()
+-      message("-- Found pthreadpool: ${PTHREADPOOL_LIBRARY}")
+-    elseif(NOT USE_INTERNAL_PTHREADPOOL_IMPL)
+-      if(NOT DEFINED PTHREADPOOL_SOURCE_DIR)
+-        set(CAFFE2_THIRD_PARTY_ROOT "${PROJECT_SOURCE_DIR}/third_party")
+-        set(PTHREADPOOL_SOURCE_DIR "${CAFFE2_THIRD_PARTY_ROOT}/pthreadpool" CACHE STRING "pthreadpool source directory")
+-      endif()
+-
+-      set(PTHREADPOOL_BUILD_TESTS OFF CACHE BOOL "")
+-      set(PTHREADPOOL_BUILD_BENCHMARKS OFF CACHE BOOL "")
+-      set(PTHREADPOOL_LIBRARY_TYPE "static" CACHE STRING "")
+-      set(PTHREADPOOL_ALLOW_DEPRECATED_API ON CACHE BOOL "")
+-      add_subdirectory(
+-        "${PTHREADPOOL_SOURCE_DIR}"
+-        "${CONFU_DEPENDENCIES_BINARY_DIR}/pthreadpool")
+-      set_property(TARGET pthreadpool PROPERTY POSITION_INDEPENDENT_CODE ON)
+-    endif()
+-
+-    if(USE_INTERNAL_PTHREADPOOL_IMPL)
+-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_INTERNAL_PTHREADPOOL_IMPL")
+-    else()
+-      list(APPEND Caffe2_DEPENDENCY_LIBS pthreadpool)
+-    endif()
+-  endif()
++  find_package(unofficial-pthreadpool CONFIG REQUIRED) # unofficial::pthreadpool
++  list(APPEND Caffe2_DEPENDENCY_LIBS unofficial::pthreadpool)
+ else()
+   set(USE_PTHREADPOOL OFF CACHE BOOL "" FORCE)
+ endif()
+ 
+ # ---[ Caffe2 uses cpuinfo library in the thread pool
+-if(NOT TARGET cpuinfo AND USE_SYSTEM_CPUINFO)
++if(FALSE)
+   add_library(cpuinfo SHARED IMPORTED)
+   find_library(CPUINFO_LIBRARY cpuinfo)
+   if(NOT CPUINFO_LIBRARY)
+@@ -359,7 +328,7 @@ if(NOT TARGET cpuinfo AND USE_SYSTEM_CPUINFO)
+   endif()
+   message("Found cpuinfo: ${CPUINFO_LIBRARY}")
+   set_target_properties(cpuinfo PROPERTIES IMPORTED_LOCATION "${CPUINFO_LIBRARY}")
+-elseif(NOT TARGET cpuinfo)
++elseif(FALSE)
+   if(NOT DEFINED CPUINFO_SOURCE_DIR)
+     set(CPUINFO_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../third_party/cpuinfo" CACHE STRING "cpuinfo source directory")
+   endif()
+@@ -386,10 +355,11 @@ elseif(NOT TARGET cpuinfo)
+   # Need to set this to avoid conflict with XNNPACK's clog external project
+   set(CLOG_SOURCE_DIR "${CPUINFO_SOURCE_DIR}/deps/clog")
+ endif()
+-list(APPEND Caffe2_DEPENDENCY_LIBS cpuinfo)
++find_package(unofficial-cpuinfo CONFIG REQUIRED) # unofficial::cpuinfo::clog unofficial::cpuinfo::cpuinfo
++list(APPEND Caffe2_DEPENDENCY_LIBS unofficial::cpuinfo::clog unofficial::cpuinfo::cpuinfo)
+ 
+ # ---[ QNNPACK
+-if(USE_QNNPACK)
++if(FALSE) # import vcpkg port `qnnpack`
+   set(CAFFE2_THIRD_PARTY_ROOT "${PROJECT_SOURCE_DIR}/third_party")
+ 
+   if(NOT DEFINED QNNPACK_SOURCE_DIR)
+@@ -446,7 +416,7 @@ if(USE_QNNPACK)
+ endif()
+ 
+ # ---[ PYTORCH_QNNPACK
+-if(USE_PYTORCH_QNNPACK)
++if(FALSE) # import vcpkg port `qnnpack`
+     if(NOT DEFINED PYTORCH_QNNPACK_SOURCE_DIR)
+       set(PYTORCH_QNNPACK_SOURCE_DIR "${PROJECT_SOURCE_DIR}/aten/src/ATen/native/quantized/cpu/qnnpack" CACHE STRING "QNNPACK source directory")
+     endif()
+@@ -494,9 +464,10 @@ if(USE_PYTORCH_QNNPACK)
+ endif()
+ 
+ # ---[ NNPACK
+-if(USE_NNPACK)
+-  include(${CMAKE_CURRENT_LIST_DIR}/External/nnpack.cmake)
+-  if(NNPACK_FOUND)
++if(USE_NNPACK) 
++  # import vcpkg port `nnpack`
++  # include(${CMAKE_CURRENT_LIST_DIR}/External/nnpack.cmake)
++  if(FALSE)
+     if(TARGET nnpack)
+       # ---[ NNPACK is being built together with Caffe2: explicitly specify dependency
+       list(APPEND Caffe2_DEPENDENCY_LIBS nnpack)
+@@ -542,20 +513,13 @@ if(USE_XNNPACK AND NOT USE_SYSTEM_XNNPACK)
+   include_directories(SYSTEM ${XNNPACK_INCLUDE_DIR})
+   list(APPEND Caffe2_DEPENDENCY_LIBS XNNPACK)
+ elseif(NOT TARGET XNNPACK AND USE_SYSTEM_XNNPACK)
+-  add_library(XNNPACK SHARED IMPORTED)
+-  find_library(XNNPACK_LIBRARY XNNPACK)
+-  set_property(TARGET XNNPACK PROPERTY IMPORTED_LOCATION "${XNNPACK_LIBRARY}")
+-  if(NOT XNNPACK_LIBRARY)
+-    message(FATAL_ERROR "Cannot find XNNPACK")
+-  endif()
+-  message("-- Found XNNPACK: ${XNNPACK_LIBRARY}")
+-  list(APPEND Caffe2_DEPENDENCY_LIBS XNNPACK)
++  find_package(xnnpack CONFIG REQUIRED)
++  list(APPEND Caffe2_DEPENDENCY_LIBS unofficial::XNNPACK)
+ endif()
+ 
+ # ---[ Vulkan deps
+ if(USE_VULKAN)
+-  set(Vulkan_LIBS)
+-  set(Vulkan_INCLUDES)
++  find_package(Vulkan REQUIRED)
+   include(${CMAKE_CURRENT_LIST_DIR}/VulkanDependencies.cmake)
+   list(APPEND Caffe2_DEPENDENCY_LIBS ${Vulkan_LIBS})
+   include_directories(SYSTEM ${Vulkan_INCLUDES})
+@@ -685,6 +649,7 @@ endif()
+ 
+ # ---[ FBGEMM
+ if(USE_FBGEMM)
++  find_package(fbgemm CONFIG REQUIRED) # fbgemm
+   set(CAFFE2_THIRD_PARTY_ROOT "${PROJECT_SOURCE_DIR}/third_party")
+   if(NOT DEFINED FBGEMM_SOURCE_DIR)
+     set(FBGEMM_SOURCE_DIR "${CAFFE2_THIRD_PARTY_ROOT}/fbgemm" CACHE STRING "FBGEMM source directory")
+@@ -736,14 +701,8 @@ endif()
+ 
+ # ---[ LMDB
+ if(USE_LMDB)
+-  find_package(LMDB)
+-  if(LMDB_FOUND)
+-    include_directories(SYSTEM ${LMDB_INCLUDE_DIR})
+-    list(APPEND Caffe2_DEPENDENCY_LIBS ${LMDB_LIBRARIES})
+-  else()
+-    message(WARNING "Not compiling with LMDB. Suppress this warning with -DUSE_LMDB=OFF")
+-    caffe2_update_option(USE_LMDB OFF)
+-  endif()
++  find_package(lmdb CONFIG REQUIRED)
++  list(APPEND Caffe2_DEPENDENCY_LIBS lmdb)
+ endif()
+ 
+ if(USE_OPENCL)
+@@ -757,17 +716,9 @@ endif()
+ # ---[ LevelDB
+ # ---[ Snappy
+ if(USE_LEVELDB)
+-  find_package(LevelDB)
+-  find_package(Snappy)
+-  if(LEVELDB_FOUND AND SNAPPY_FOUND)
+-    include_directories(SYSTEM ${LevelDB_INCLUDE})
+-    list(APPEND Caffe2_DEPENDENCY_LIBS ${LevelDB_LIBRARIES})
+-    include_directories(SYSTEM ${Snappy_INCLUDE_DIR})
+-    list(APPEND Caffe2_DEPENDENCY_LIBS ${Snappy_LIBRARIES})
+-  else()
+-    message(WARNING "Not compiling with LevelDB. Suppress this warning with -DUSE_LEVELDB=OFF")
+-    caffe2_update_option(USE_LEVELDB OFF)
+-  endif()
++  find_package(leveldb CONFIG REQUIRED) # leveldb::leveldb
++  find_package(Snappy CONFIG REQUIRED) # Snappy::snappy
++  list(APPEND Caffe2_DEPENDENCY_LIBS leveldb::leveldb Snappy::snappy)
+ endif()
+ 
+ # ---[ NUMA
+@@ -867,18 +818,17 @@ if(NOT TARGET fp16 AND NOT USE_SYSTEM_FP16)
+     "${FP16_SOURCE_DIR}"
+     "${CONFU_DEPENDENCIES_BINARY_DIR}/FP16")
+ elseif(NOT TARGET fp16 AND USE_SYSTEM_FP16)
+-  add_library(fp16 STATIC "/usr/include/fp16.h")
+-  set_target_properties(fp16 PROPERTIES LINKER_LANGUAGE C)
++  include_directories(${FP16_INCLUDE_DIRS})
+ endif()
+-list(APPEND Caffe2_DEPENDENCY_LIBS fp16)
+ 
+ # ---[ EIGEN
+ # Due to license considerations, we will only use the MPL2 parts of Eigen.
+ set(EIGEN_MPL2_ONLY 1)
+ if(USE_SYSTEM_EIGEN_INSTALL)
+-  find_package(Eigen3)
++  find_package(Eigen3 CONFIG REQUIRED)
+   if(EIGEN3_FOUND)
+     message(STATUS "Found system Eigen at " ${EIGEN3_INCLUDE_DIR})
++    list(APPEND Caffe2_DEPENDENCY_LIBS Eigen3::Eigen)
+   else()
+     message(STATUS "Did not find system Eigen. Using third party subdirectory.")
+     set(EIGEN3_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR}/../third_party/eigen)
+@@ -887,8 +837,8 @@ if(USE_SYSTEM_EIGEN_INSTALL)
+ else()
+   message(STATUS "Using third party subdirectory Eigen.")
+   set(EIGEN3_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR}/../third_party/eigen)
++  include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+ endif()
+-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+ 
+ # ---[ Python + Numpy
+ if(BUILD_PYTHON)
+@@ -992,12 +942,7 @@ if(BUILD_PYTHON)
+ endif()
+ 
+ # ---[ pybind11
+-if(NOT pybind11_PREFER_third_party)
+-  find_package(pybind11 CONFIG)
+-  if(NOT pybind11_FOUND)
+-    find_package(pybind11)
+-  endif()
+-endif()
++find_package(pybind11 CONFIG REQUIRED)
+ 
+ if(pybind11_FOUND)
+     message(STATUS "System pybind11 found")
+@@ -1401,14 +1346,12 @@ if(NOT INTERN_BUILD_MOBILE AND BUILD_CAFFE2_OPS)
+ endif()
+ 
+ if(USE_ZSTD)
+-  list(APPEND Caffe2_DEPENDENCY_LIBS libzstd_static)
+-  include_directories(SYSTEM ${CMAKE_CURRENT_LIST_DIR}/../third_party/zstd/lib)
+-  add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../third_party/zstd/build/cmake)
+-  set_property(TARGET libzstd_static PROPERTY POSITION_INDEPENDENT_CODE ON)
++  find_package(zstd CONFIG REQUIRED)
++  list(APPEND Caffe2_DEPENDENCY_LIBS zstd::libzstd_static)
+ endif()
+ 
+ # ---[ Onnx
+-if(CAFFE2_CMAKE_BUILDING_WITH_MAIN_REPO AND NOT INTERN_DISABLE_ONNX)
++if(FALSE) # vcpkg doesn't have a port at this moment
+   if(EXISTS "${CAFFE2_CUSTOM_PROTOC_EXECUTABLE}")
+     set(ONNX_CUSTOM_PROTOC_EXECUTABLE ${CAFFE2_CUSTOM_PROTOC_EXECUTABLE})
+   endif()
+@@ -1774,21 +1717,13 @@ endif()
+ #
+ # End ATen checks
+ #
+-set(TEMP_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs" FORCE)
+-add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/fmt)
+ 
+-# Disable compiler feature checks for `fmt`.
+-#
+-# CMake compiles a little program to check compiler features. Some of our build
+-# configurations (notably the mobile build analyzer) will populate
+-# CMAKE_CXX_FLAGS in ways that break feature checks. Since we already know
+-# `fmt` is compatible with a superset of the compilers that PyTorch is, it
+-# shouldn't be too bad to just disable the checks.
+-set_target_properties(fmt-header-only PROPERTIES INTERFACE_COMPILE_FEATURES "")
+-
+-list(APPEND Caffe2_DEPENDENCY_LIBS fmt::fmt-header-only)
+-set(BUILD_SHARED_LIBS ${TEMP_BUILD_SHARED_LIBS} CACHE BOOL "Build shared libs" FORCE)
++find_package(fmt CONFIG REQUIRED)
++if(BUILD_SHARED_LIBS)
++  list(APPEND Caffe2_DEPENDENCY_LIBS fmt::fmt-header-only)
++else()
++  list(APPEND Caffe2_DEPENDENCY_LIBS fmt::fmt)
++endif()
+ 
+ # ---[ Kineto
+ if(USE_KINETO AND INTERN_BUILD_MOBILE)

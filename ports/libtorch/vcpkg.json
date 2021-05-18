@@ -41,13 +41,10 @@
     },
     "leveldb": {
       "description": "Build with LevelDB",
-      "dependencies":[
+      "dependencies": [
         "leveldb",
-        "snappy"    
+        "snappy"
       ]
-    },
-    "metal": {
-      "description": "(iOS) Build with Metal GPU backend"
     },
     "nnpack": {
       "description": "Build with NNPack",
