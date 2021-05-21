@@ -15,10 +15,15 @@ else()
     set(ENABLE_NETWORK 1)
 endif()
 
+vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    lint BUILD_XMLLINT
+)
+
 vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
     PREFER_NINJA
     OPTIONS
+        ${FEATURE_OPTIONS}
         -DPORT_DIR=${CMAKE_CURRENT_LIST_DIR}
         -DWITH_HTTP=${ENABLE_NETWORK}
         -DWITH_FTP=${ENABLE_NETWORK}

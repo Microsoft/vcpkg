@@ -1,0 +1,234 @@
+diff --git a/glamor/meson.build b/glamor/meson.build
+index 268af593e..386fef5ed 100644
+--- a/glamor/meson.build
++++ b/glamor/meson.build
+@@ -38,7 +38,7 @@ if build_xv
+     srcs_glamor += 'glamor_xv.c'
+ endif
+ 
+-epoxy_dep = dependency('epoxy')
++epoxy_dep = dependency('epoxy', static: true)
+ 
+ glamor = static_library('glamor',
+     srcs_glamor,
+diff --git a/hw/dmx/config/meson.build b/hw/dmx/config/meson.build
+index 39b41c2cb..a7b801183 100644
+--- a/hw/dmx/config/meson.build
++++ b/hw/dmx/config/meson.build
+@@ -54,11 +54,11 @@ executable('xdmxconfig',
+     ],
+     dependencies: [
+         common_dep,
+-        dependency('xaw7'),
+-        dependency('xmu'),
+-        dependency('xt'),
+-        dependency('xpm'),
+-        dependency('x11'),
++        dependency('xaw7', static: true),
++        dependency('xmu', static: true),
++        dependency('xt', static: true),
++        dependency('xpm', static: true),
++        dependency('x11', static: true),
+     ],
+     link_with: dmx_config,
+     c_args: dmx_c_args,
+diff --git a/hw/dmx/examples/meson.build b/hw/dmx/examples/meson.build
+index ad0d798c3..50e98a68c 100644
+--- a/hw/dmx/examples/meson.build
++++ b/hw/dmx/examples/meson.build
+@@ -17,12 +17,12 @@ dmx_examples = [
+ ]
+ 
+ noinst_dmx_examples = [
+-    ['xinput', [dmx_dep, dependency('xi')]],
+-    ['xtest', [dependency('xtst')]],
++    ['xinput', [dmx_dep, dependency('xi', static: true)]],
++    ['xtest', [dependency('xtst', static: true)]],
+     ['evi', []],
+     ['xled', []],
+     ['xbell', []],
+-    ['res', [dependency('xres')]],
++    ['res', [dependency('xres', static: true)]],
+ ]
+ 
+ foreach ex: dmx_examples
+diff --git a/hw/dmx/meson.build b/hw/dmx/meson.build
+index 877466eaf..4c26843c3 100644
+--- a/hw/dmx/meson.build
++++ b/hw/dmx/meson.build
+@@ -55,13 +55,13 @@ install_man(configure_file(
+ 
+ dmx_dep = [
+     common_dep,
+-    dependency('dmxproto', version: '>= 2.2.99.1'),
+-    dependency('xext', version: '>= 1.0.99.4'),
+-    dependency('xau'),
+-    dependency('xmuu'),
+-    dependency('xfixes'),
+-    dependency('xrender'),
+-    dependency('xi', version: '>= 1.2.99.1'),
++    dependency('dmxproto', version: '>= 2.2.99.1', static: true),
++    dependency('xext', version: '>= 1.0.99.4', static: true),
++    dependency('xau', static: true),
++    dependency('xmuu', static: true),
++    dependency('xfixes', static: true),
++    dependency('xrender', static: true),
++    dependency('xi', version: '>= 1.2.99.1', static: true),
+     xdmcp_dep,
+     dl_dep,
+ ]
+diff --git a/hw/kdrive/ephyr/meson.build b/hw/kdrive/ephyr/meson.build
+index f8135e914..accd54340 100644
+--- a/hw/kdrive/ephyr/meson.build
++++ b/hw/kdrive/ephyr/meson.build
+@@ -8,17 +8,17 @@ srcs = [
+ 
+ xephyr_dep = [
+     common_dep,
+-    dependency('xcb'),
+-    dependency('xcb-shape'),
+-    dependency('xcb-render'),
+-    dependency('xcb-renderutil'),
+-    dependency('xcb-aux'),
+-    dependency('xcb-image'),
+-    dependency('xcb-icccm'),
+-    dependency('xcb-shm', version : '>=1.9.3'),
+-    dependency('xcb-keysyms'),
+-    dependency('xcb-randr'),
+-    dependency('xcb-xkb'),
++    dependency('xcb', static: true),
++    dependency('xcb-shape', static: true),
++    dependency('xcb-render', static: true),
++    dependency('xcb-renderutil', static: true),
++    dependency('xcb-aux', static: true),
++    dependency('xcb-image', static: true),
++    dependency('xcb-icccm', static: true),
++    dependency('xcb-shm', version : '>=1.9.3', static: true),
++    dependency('xcb-keysyms', static: true),
++    dependency('xcb-randr', static: true),
++    dependency('xcb-xkb', static: true),
+ ]
+ 
+ xephyr_glamor = []
+@@ -29,7 +29,7 @@ if build_glamor
+     endif
+     xephyr_glamor += glamor
+     xephyr_glamor += glamor_egl_stubs
+-    xephyr_dep += dependency('x11-xcb')
++    xephyr_dep += dependency('x11-xcb', static: true)
+     xephyr_dep += epoxy_dep
+ endif
+ 
+diff --git a/meson.build b/meson.build
+index 6a69184f0..87352ef01 100644
+--- a/meson.build
++++ b/meson.build
+@@ -69,7 +69,7 @@ fixesproto_dep = dependency('fixesproto', version: '>= 5.0')
+ damageproto_dep = dependency('damageproto', version: '>= 1.1')
+ xcmiscproto_dep = dependency('xcmiscproto', version: '>= 1.2.0')
+ bigreqsproto_dep = dependency('bigreqsproto', version: '>= 1.1.0')
+-xtrans_dep = dependency('xtrans', version: '>= 1.3.5')
++xtrans_dep = dependency('xtrans', version: '>= 1.3.5', static: true)
+ 
+ videoproto_dep = dependency('videoproto')
+ compositeproto_dep = dependency('compositeproto', version: '>= 0.4')
+@@ -84,12 +84,12 @@ xf86bigfontproto_dep = dependency('xf86bigfontproto', version: '>= 1.2.0', required: get_option('xf86bigfont'))
+ xf86vidmodeproto_dep = dependency('xf86vidmodeproto', version: '>= 2.2.99.1')
+ applewmproto_dep = dependency('applewmproto', version: '>= 1.4', required: false)
+-xshmfence_dep = dependency('xshmfence', version: '>= 1.1', required: false)
++xshmfence_dep = dependency('xshmfence', version: '>= 1.1', required: false, static: true)
+ 
+-pixman_dep = dependency('pixman-1')
+ libbsd_dep = dependency('libbsd', required: false)
+-xkbcomp_dep = dependency('xkbcomp', required: false)
+-xkbfile_dep = dependency('xkbfile')
+-xfont2_dep = dependency('xfont2', version: '>= 2.0')
++pixman_dep = dependency('pixman-1', static: true)
++xkbcomp_dep = dependency('xkbcomp', required: false, static: true)
++xkbfile_dep = dependency('xkbfile', static: true)
++xfont2_dep = dependency('xfont2', version: '>= 2.0', static: true)
+ 
+ dbus_required = get_option('systemd_logind') == 'true'
+ dbus_dep = dependency('dbus-1', version: '>= 1.0', required: dbus_required)
+@@ -122,7 +122,7 @@ endif
+
+ dfp = get_option('default_font_path')
+ if dfp == ''
+-    fontutil_dep = dependency('fontutil')
++    fontutil_dep = dependency('fontutil', static: true)
+     fontrootdir = fontutil_dep.get_pkgconfig_variable('fontrootdir')
+     dfp_elements = [
+         join_paths(fontrootdir, 'misc'),
+@@ -201,9 +201,9 @@ if (host_machine.system() != 'darwin' and
+         xwayland_dep = [
+-            dependency('wayland-client', version: wayland_req, required: xwayland_required),
+-            dependency('wayland-protocols', version: wayland_protocols_req, required: xwayland_required),
++            dependency('wayland-client', version: wayland_req, required: xwayland_required, static: true),
++            dependency('wayland-protocols', version: wayland_protocols_req, required: xwayland_required, static: true),
+         ]
+
+         if build_glamor
+-            xwayland_dep += dependency('libdrm', version: libdrm_req, required: xwayland_required)
+-            xwayland_dep += dependency('epoxy', required: xwayland_required)
++            xwayland_dep += dependency('libdrm', version: libdrm_req, required: xwayland_required, static: true)
++            xwayland_dep += dependency('epoxy', required: xwayland_required, static: true)
+         endif
+@@ -225,9 +225,9 @@ if (host_machine.system() != 'darwin' and
+         xnest_required = get_option('xnest') == 'true'
+ 
+         xnest_dep = [
+-            dependency('xext', version: xext_req, required: xnest_required),
+-            dependency('x11', required: xnest_required),
+-            dependency('xau', required: xnest_required),
++            dependency('xext', version: xext_req, required: xnest_required, static: true),
++            dependency('x11', required: xnest_required, static: true),
++            dependency('xau', required: xnest_required, static: true ),
+         ]
+ 
+         build_xnest = true
+@@ -323,7 +323,7 @@ gbm_dep = dependency('', required: false)
+ epoxy_dep = dependency('', required: false)
+ if build_glamor
+     gbm_dep = dependency('gbm', version: gbm_req, required: false)
+-    epoxy_dep = dependency('epoxy', required: false)
++    epoxy_dep = dependency('epoxy', required: false, static: true)
+ endif
+ 
+ eglstream_option = get_option('xwayland_eglstream')
+@@ -434,7 +434,7 @@ sha1_dep = nettle_dep
+ 
+ xdmcp_dep = dependency('', required : false)
+ if get_option('xdmcp')
+-    xdmcp_dep = dependency('xdmcp')
++    xdmcp_dep = dependency('xdmcp', static: true)
+ endif
+ 
+ has_xdm_auth = get_option('xdm-auth-1')
+@@ -448,7 +448,7 @@ if build_glx
+     build_hashtable = true
+ endif
+ 
+-libdrm_dep = dependency('libdrm', version: libdrm_req, required: false)
++libdrm_dep = dependency('libdrm', version: libdrm_req, required: false, static: true)
+ 
+ if get_option('dri1') == 'auto'
+     build_dri1 = xf86driproto_dep.found() and libdrm_dep.found()
+@@ -521,11 +521,11 @@ endif
+ build_dga = false
+ xf86dgaproto_dep = dependency('', required: false)
+ if get_option('dga') == 'auto'
+-    xf86dgaproto_dep = dependency('xf86dgaproto', version: xf86dgaproto_req, required: false)
++    xf86dgaproto_dep = dependency('xf86dgaproto', version: xf86dgaproto_req, required: false, static: true)
+     if xf86dgaproto_dep.found()
+         build_dga = true
+     endif
+ elif get_option('dga') == 'true'
+-    xf86dgaproto_dep = dependency('xf86dgaproto', version: xf86dgaproto_req, required: true)
++    xf86dgaproto_dep = dependency('xf86dgaproto', version: xf86dgaproto_req, required: true, static: true)
+     build_dga = true
+ endif
+@@ -749,3 +749,3 @@ libxserver = [
+ if host_machine.system() != 'windows'
+-    subdir('test')
++    #subdir('test')
+ endif

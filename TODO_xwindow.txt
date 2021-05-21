@@ -1,0 +1,3 @@
+Windows:
+xcwm -> src/libxcwm/event_loop.c(48): error C2074: '_event_thread': 'struct' initialization requires a brace-enclosed initializer list
+xxf86vm -> libtool:   error: can't build x86_64-pc-mingw32 shared library unless -no-undefined is specified

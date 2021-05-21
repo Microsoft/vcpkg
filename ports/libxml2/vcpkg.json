@@ -8,5 +8,10 @@
     "libiconv",
     "liblzma",
     "zlib"
-  ]
+  ],
+  "features": {
+    "lint": {
+      "description": "Builds xmllint"
+    }
+  }
 }
