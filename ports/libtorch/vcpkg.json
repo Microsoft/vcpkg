@@ -14,6 +14,7 @@
     "glog",
     "lmdb",
     "protobuf",
+    "sleef",
     {
       "name": "tensorpipe",
       "platform": "linux | osx"
@@ -36,7 +37,13 @@
       "description": "Build with NVIDIA CUDA GPU backend",
       "dependencies": [
         "cuda",
-        "cudnn"
+        "cudnn",
+        {
+          "name": "tensorpipe",
+          "features": [
+            "cuda"
+          ]
+        }
       ]
     },
     "leveldb": {
