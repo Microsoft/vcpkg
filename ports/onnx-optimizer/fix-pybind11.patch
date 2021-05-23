@@ -1,0 +1,38 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c2e48b3..757f020 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -31,6 +31,12 @@ add_executable(onnx_optimizer_exec examples/onnx_optimizer_exec.cpp)
+ target_link_libraries(onnx_optimizer_exec onnx_optimizer)
+ 
+ if(BUILD_ONNX_PYTHON)
++  if(WIN32)
++    find_package(Python ${PY_VERSION} COMPONENTS Interpreter REQUIRED)
++  else()
++    find_package(Python ${PY_VERSION} COMPONENTS Interpreter Development REQUIRED)
++  endif()
++
+   if("${PY_EXT_SUFFIX}" STREQUAL "")
+     if(MSVC)
+       set(PY_EXT_SUFFIX ".pyd")
+@@ -49,9 +55,9 @@ if(BUILD_ONNX_PYTHON)
+   target_include_directories(onnx_opt_cpp2py_export PRIVATE
+                              $<BUILD_INTERFACE:${ONNX_ROOT}>
+                              $<INSTALL_INTERFACE:include>
+-                             ${PYTHON_INCLUDE_DIR})
++                             ${Python_INCLUDE_DIRS})
+   # pybind11 is a header only lib
+-  find_package(pybind11 2.2)
++  find_package(pybind11 2.2 CONFIG REQUIRED)
+   if(pybind11_FOUND)
+     target_include_directories(onnx_opt_cpp2py_export PUBLIC
+       ${pybind11_INCLUDE_DIRS})
+@@ -89,8 +95,6 @@ if(BUILD_ONNX_PYTHON)
+   target_link_libraries(onnx_opt_cpp2py_export PRIVATE onnx_optimizer)
+ 
+   if(MSVC)
+-    find_package(PythonInterp ${PY_VERSION} REQUIRED)
+-    find_package(PythonLibs ${PY_VERSION} REQUIRED)
+     target_link_libraries(onnx_opt_cpp2py_export PRIVATE ${PYTHON_LIBRARIES})
+     target_compile_options(onnx_opt_cpp2py_export
+                            PRIVATE /MP

@@ -1,0 +1,15 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c2e48b3..757f020 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -9,8 +9,8 @@ endif(NOT MSVC)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(ONNX_ROOT ${PROJECT_SOURCE_DIR}/third_party/onnx)
+-add_subdirectory(${ONNX_ROOT})
++find_package(protobuf CONFIG REQUIRED)
++find_package(ONNX CONFIG REQUIRED)
+ 
+ file(READ "${PROJECT_SOURCE_DIR}/VERSION_NUMBER" ONNX_OPTIMIZER_VERSION)
+ string(STRIP "${ONNX_OPTIMIZER_VERSION}" ONNX_OPTIMIZER_VERSION)
