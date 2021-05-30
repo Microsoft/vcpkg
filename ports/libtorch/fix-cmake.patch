@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 24d3c9b..37d67cb 100644
+index 24d3c9b..91d6ff6 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -538,15 +538,12 @@ endif()
@@ -36,6 +36,22 @@ index 24d3c9b..37d67cb 100644
  include(cmake/Dependencies.cmake)
  
  if(USE_FBGEMM)
+@@ -617,13 +619,13 @@ endif()
+ set(CMAKE_C_STANDARD 11)
+ set(CMAKE_CXX_STANDARD 14)
+ if(NOT MSVC)
+-  string(APPEND CMAKE_CXX_FLAGS " -O2 -fPIC")
++  string(APPEND CMAKE_CXX_FLAGS " -fPIC")
+   string(APPEND CMAKE_CXX_FLAGS " -Wno-narrowing")
+   # Eigen fails to build with some versions, so convert this to a warning
+   # Details at http://eigen.tuxfamily.org/bz/show_bug.cgi?id=1459
+   string(APPEND CMAKE_CXX_FLAGS " -Wall")
+   string(APPEND CMAKE_CXX_FLAGS " -Wextra")
+-  string(APPEND CMAKE_CXX_FLAGS " -Werror=return-type")
++  # string(APPEND CMAKE_CXX_FLAGS " -Werror=return-type")
+   string(APPEND CMAKE_CXX_FLAGS " -Wno-missing-field-initializers")
+   string(APPEND CMAKE_CXX_FLAGS " -Wno-type-limits")
+   string(APPEND CMAKE_CXX_FLAGS " -Wno-array-bounds")
 diff --git a/caffe2/CMakeLists.txt b/caffe2/CMakeLists.txt
 index 7bef849..cee33af 100644
 --- a/caffe2/CMakeLists.txt
@@ -72,20 +88,19 @@ index 7bef849..cee33af 100644
  
  # ==========================================================
 diff --git a/cmake/Dependencies.cmake b/cmake/Dependencies.cmake
-index 06464e7..0fdd3e3 100644
+index 06464e7..e36641d 100644
 --- a/cmake/Dependencies.cmake
 +++ b/cmake/Dependencies.cmake
-@@ -82,7 +82,8 @@ else()
-       "Cannot find threading library. Caffe2 requires Threads to compile.")
+@@ -83,6 +83,8 @@ else()
  endif()
  
--if(USE_TBB)
-+find_package(TBB CONFIG REQUIRED) # TBB::tbb
-+if(FALSE)
+ if(USE_TBB)
++  find_package(TBB CONFIG REQUIRED) # TBB::tbb
++elseif(FALSE)
    message(STATUS "Compiling TBB from source")
    # Unset our restrictive C++ flags here and reset them later.
    # Remove this once we use proper target_compile_options.
-@@ -312,46 +313,14 @@ if(INTERN_BUILD_MOBILE OR NOT DISABLE_NNPACK_AND_FAMILY)
+@@ -312,46 +314,14 @@ if(INTERN_BUILD_MOBILE OR NOT DISABLE_NNPACK_AND_FAMILY)
    set(USE_PTHREADPOOL ON CACHE BOOL "" FORCE)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_PTHREADPOOL")
  
@@ -135,7 +150,7 @@ index 06464e7..0fdd3e3 100644
    add_library(cpuinfo SHARED IMPORTED)
    find_library(CPUINFO_LIBRARY cpuinfo)
    if(NOT CPUINFO_LIBRARY)
-@@ -359,7 +328,7 @@ if(NOT TARGET cpuinfo AND USE_SYSTEM_CPUINFO)
+@@ -359,7 +329,7 @@ if(NOT TARGET cpuinfo AND USE_SYSTEM_CPUINFO)
    endif()
    message("Found cpuinfo: ${CPUINFO_LIBRARY}")
    set_target_properties(cpuinfo PROPERTIES IMPORTED_LOCATION "${CPUINFO_LIBRARY}")
@@ -144,7 +159,7 @@ index 06464e7..0fdd3e3 100644
    if(NOT DEFINED CPUINFO_SOURCE_DIR)
      set(CPUINFO_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../third_party/cpuinfo" CACHE STRING "cpuinfo source directory")
    endif()
-@@ -386,10 +355,11 @@ elseif(NOT TARGET cpuinfo)
+@@ -386,10 +356,11 @@ elseif(NOT TARGET cpuinfo)
    # Need to set this to avoid conflict with XNNPACK's clog external project
    set(CLOG_SOURCE_DIR "${CPUINFO_SOURCE_DIR}/deps/clog")
  endif()
@@ -158,7 +173,7 @@ index 06464e7..0fdd3e3 100644
    set(CAFFE2_THIRD_PARTY_ROOT "${PROJECT_SOURCE_DIR}/third_party")
  
    if(NOT DEFINED QNNPACK_SOURCE_DIR)
-@@ -446,7 +416,7 @@ if(USE_QNNPACK)
+@@ -446,7 +417,7 @@ if(USE_QNNPACK)
  endif()
  
  # ---[ PYTORCH_QNNPACK
@@ -167,7 +182,7 @@ index 06464e7..0fdd3e3 100644
      if(NOT DEFINED PYTORCH_QNNPACK_SOURCE_DIR)
        set(PYTORCH_QNNPACK_SOURCE_DIR "${PROJECT_SOURCE_DIR}/aten/src/ATen/native/quantized/cpu/qnnpack" CACHE STRING "QNNPACK source directory")
      endif()
-@@ -494,9 +464,10 @@ if(USE_PYTORCH_QNNPACK)
+@@ -494,9 +465,10 @@ if(USE_PYTORCH_QNNPACK)
  endif()
  
  # ---[ NNPACK
@@ -181,7 +196,7 @@ index 06464e7..0fdd3e3 100644
      if(TARGET nnpack)
        # ---[ NNPACK is being built together with Caffe2: explicitly specify dependency
        list(APPEND Caffe2_DEPENDENCY_LIBS nnpack)
-@@ -542,20 +513,13 @@ if(USE_XNNPACK AND NOT USE_SYSTEM_XNNPACK)
+@@ -542,20 +514,13 @@ if(USE_XNNPACK AND NOT USE_SYSTEM_XNNPACK)
    include_directories(SYSTEM ${XNNPACK_INCLUDE_DIR})
    list(APPEND Caffe2_DEPENDENCY_LIBS XNNPACK)
  elseif(NOT TARGET XNNPACK AND USE_SYSTEM_XNNPACK)
@@ -205,7 +220,7 @@ index 06464e7..0fdd3e3 100644
    include(${CMAKE_CURRENT_LIST_DIR}/VulkanDependencies.cmake)
    list(APPEND Caffe2_DEPENDENCY_LIBS ${Vulkan_LIBS})
    include_directories(SYSTEM ${Vulkan_INCLUDES})
-@@ -685,6 +649,7 @@ endif()
+@@ -685,6 +650,7 @@ endif()
  
  # ---[ FBGEMM
  if(USE_FBGEMM)
@@ -213,7 +228,7 @@ index 06464e7..0fdd3e3 100644
    set(CAFFE2_THIRD_PARTY_ROOT "${PROJECT_SOURCE_DIR}/third_party")
    if(NOT DEFINED FBGEMM_SOURCE_DIR)
      set(FBGEMM_SOURCE_DIR "${CAFFE2_THIRD_PARTY_ROOT}/fbgemm" CACHE STRING "FBGEMM source directory")
-@@ -736,14 +701,8 @@ endif()
+@@ -736,14 +702,8 @@ endif()
  
  # ---[ LMDB
  if(USE_LMDB)
@@ -230,7 +245,7 @@ index 06464e7..0fdd3e3 100644
  endif()
  
  if(USE_OPENCL)
-@@ -757,17 +716,9 @@ endif()
+@@ -757,17 +717,9 @@ endif()
  # ---[ LevelDB
  # ---[ Snappy
  if(USE_LEVELDB)
@@ -251,7 +266,7 @@ index 06464e7..0fdd3e3 100644
  endif()
  
  # ---[ NUMA
-@@ -867,18 +818,17 @@ if(NOT TARGET fp16 AND NOT USE_SYSTEM_FP16)
+@@ -867,18 +819,17 @@ if(NOT TARGET fp16 AND NOT USE_SYSTEM_FP16)
      "${FP16_SOURCE_DIR}"
      "${CONFU_DEPENDENCIES_BINARY_DIR}/FP16")
  elseif(NOT TARGET fp16 AND USE_SYSTEM_FP16)
@@ -273,7 +288,7 @@ index 06464e7..0fdd3e3 100644
    else()
      message(STATUS "Did not find system Eigen. Using third party subdirectory.")
      set(EIGEN3_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR}/../third_party/eigen)
-@@ -887,8 +837,8 @@ if(USE_SYSTEM_EIGEN_INSTALL)
+@@ -887,8 +838,8 @@ if(USE_SYSTEM_EIGEN_INSTALL)
  else()
    message(STATUS "Using third party subdirectory Eigen.")
    set(EIGEN3_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR}/../third_party/eigen)
@@ -283,7 +298,7 @@ index 06464e7..0fdd3e3 100644
  
  # ---[ Python + Numpy
  if(BUILD_PYTHON)
-@@ -992,12 +942,7 @@ if(BUILD_PYTHON)
+@@ -992,16 +943,12 @@ if(BUILD_PYTHON)
  endif()
  
  # ---[ pybind11
@@ -292,12 +307,29 @@ index 06464e7..0fdd3e3 100644
 -  if(NOT pybind11_FOUND)
 -    find_package(pybind11)
 -  endif()
--endif()
-+find_package(pybind11 CONFIG REQUIRED)
++if(BUILD_PYTHON)
++  find_package(pybind11 CONFIG REQUIRED)
++  message(STATUS "pybind11 include dirs: " "${pybind11_INCLUDE_DIRS}")
++  include_directories(SYSTEM ${pybind11_INCLUDE_DIRS})
+ endif()
+-
+-if(pybind11_FOUND)
+-    message(STATUS "System pybind11 found")
+-else()
++if(FALSE)
+     message(STATUS "Using third_party/pybind11.")
+     set(pybind11_INCLUDE_DIRS ${CMAKE_CURRENT_LIST_DIR}/../third_party/pybind11/include)
+     install(DIRECTORY ${pybind11_INCLUDE_DIRS}
+@@ -1011,8 +958,6 @@ else()
+         "Use the third_party/pybind11 submodule, instead of looking for system
+         installation of pybind11")
+ endif()
+-message(STATUS "pybind11 include dirs: " "${pybind11_INCLUDE_DIRS}")
+-include_directories(SYSTEM ${pybind11_INCLUDE_DIRS})
  
- if(pybind11_FOUND)
-     message(STATUS "System pybind11 found")
-@@ -1401,14 +1346,12 @@ if(NOT INTERN_BUILD_MOBILE AND BUILD_CAFFE2_OPS)
+ # ---[ MPI
+ if(USE_MPI)
+@@ -1401,14 +1346,20 @@ if(NOT INTERN_BUILD_MOBILE AND BUILD_CAFFE2_OPS)
  endif()
  
  if(USE_ZSTD)
@@ -311,11 +343,19 @@ index 06464e7..0fdd3e3 100644
  
  # ---[ Onnx
 -if(CAFFE2_CMAKE_BUILDING_WITH_MAIN_REPO AND NOT INTERN_DISABLE_ONNX)
++if(USE_SYSTEM_ONNX)
++  # onnx onnxifi onnx_proto onnxifi_loader ...
++  find_package(ONNX CONFIG REQUIRED) 
++  if(ONNX_ML)
++    add_compile_definitions(ONNX_ML=1)
++  endif()
++  list(APPEND Caffe2_DEPENDENCY_LIBS onnx_proto onnx)
++endif()
 +if(FALSE) # vcpkg doesn't have a port at this moment
    if(EXISTS "${CAFFE2_CUSTOM_PROTOC_EXECUTABLE}")
      set(ONNX_CUSTOM_PROTOC_EXECUTABLE ${CAFFE2_CUSTOM_PROTOC_EXECUTABLE})
    endif()
-@@ -1774,21 +1717,13 @@ endif()
+@@ -1774,21 +1725,13 @@ endif()
  #
  # End ATen checks
  #

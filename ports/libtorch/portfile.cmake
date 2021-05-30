@@ -5,8 +5,8 @@ vcpkg_from_github(
     REF v1.8.1
     SHA512 33f5fe813641bdcdcbf5cde4bf8eb5af7fc6f8b3ab37067b0ec10eebda56cdca0c1b42053448ebdd2ab959adb3e9532646324a72729562f8e253229534b39146
     HEAD_REF master
-    PATCHES
-        fix-cmake.patch
+    # PATCHES
+    #     fix-cmake.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -27,8 +27,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     nnpack  USE_NNPACK  # todo: check use of `DISABLE_NNPACK_AND_FAMILY`
     xnnpack USE_XNNPACK
     xnnpack USE_SYSTEM_XNNPACK
-    qnnpack USE_QNNPACK
-    qnnpack USE_PYTORCH_QNNPACK
+    qnnpack USE_QNNPACK # todo: check use of `USE_PYTORCH_QNNPACK`
 )
 
 vcpkg_find_acquire_program(PYTHON3)
@@ -61,9 +60,9 @@ vcpkg_cmake_configure(
         -DUSE_SYSTEM_PSIMD=ON
         -DUSE_SYSTEM_FXDIV=ON
         -DUSE_SYSTEM_CPUINFO=ON
-        -DUSE_SYSTEM_ONNX=OFF
+        -DUSE_SYSTEM_ONNX=ON
         -DINTERN_DISABLE_ONNX=OFF
-        -DONNX_ML=OFF
+        -DONNX_ML=ON
         -DBUILD_CUSTOM_PROTOBUF=OFF
         -DBUILD_PYTHON=OFF
         -DPYTHON_EXECUTABLE=${PYTHON3}
@@ -91,6 +90,7 @@ vcpkg_cmake_configure(
         -DUSE_REDIS=OFF
         -DUSE_KINETO=OFF
         -DUSE_NUMA=OFF
+        -DUSE_PYTORCH_QNNPACK=OFF
     OPTIONS_DEBUG
         -DUSE_TSAN=ON  # Both options are exclusive. Here, we activate thread sanitizer
         -DUSE_ASAN=OFF # because we have related options like TBB and OpenMP
