@@ -39,7 +39,11 @@ vcpkg_cmake_config_fixup(PACKAGE_NAME ONNXOptimizer CONFIG_PATH lib/cmake/ONNXOp
 
 file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
 
+file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/include/onnx)
+file(RENAME ${CURRENT_PACKAGES_DIR}/include/onnxoptimizer 
+            ${CURRENT_PACKAGES_DIR}/include/onnx/optimizer
+)
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include
                     ${CURRENT_PACKAGES_DIR}/debug/share
-                    ${CURRENT_PACKAGES_DIR}/include/onnxoptimizer/test
+                    ${CURRENT_PACKAGES_DIR}/include/onnx/optimizer/test
 )
