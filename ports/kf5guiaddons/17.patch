@@ -1,0 +1,29 @@
+From 738ce5ca2c784321a553daad04dbdc94b1f3fc1a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dawid=20Wro=CC=81bel?= <me@dawidwrobel.com>
+Date: Mon, 31 May 2021 17:47:23 -0400
+Subject: [PATCH] Support static builds
+
+Add wayland dependency to Config.cmake for static builds to work
+---
+ KF5GuiAddonsConfig.cmake.in | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/KF5GuiAddonsConfig.cmake.in b/KF5GuiAddonsConfig.cmake.in
+index fd7330a..122b29e 100644
+--- a/KF5GuiAddonsConfig.cmake.in
++++ b/KF5GuiAddonsConfig.cmake.in
+@@ -5,6 +5,11 @@
+ include(CMakeFindDependencyMacro)
+ find_dependency(Qt5Gui @REQUIRED_QT_VERSION@)
+ 
++if (NOT @BUILD_SHARED_LIBS@)
++    if (@WITH_WAYLAND@)
++        find_dependency(Wayland REQUIRED Client)
++    endif()
++endif()
+ 
+ include("${CMAKE_CURRENT_LIST_DIR}/KF5GuiAddonsTargets.cmake")
+ @PACKAGE_INCLUDE_QCHTARGETS@
+-- 
+GitLab
+

@@ -4,6 +4,8 @@ vcpkg_from_github(
     REF v5.81.0
     SHA512 67e909f4d1fab700e087d6e5dad8ac8652ff2a42b64cf9f65be87be9ffb30324c074477af7c762689f5725d3f661e09c2f06d22eacd6870a543fb6d1e21ee9b6
     HEAD_REF master
+    PATCHES
+        17.patch    # https://invent.kde.org/frameworks/kguiaddons/-/merge_requests/17
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
