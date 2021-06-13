@@ -18,8 +18,8 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO google/angle
-    REF d949154da428bb3e924e28a8eadfe2327631c8bb # chromium/4148
-    SHA512 3ef1c94fccfca592057652e0ad305e3025184675e2323a714428ec934048496fbd242b5e1298bb5e3b3058b53d54f6889e446cbd81af7bea2cc6d5e13c7356bd
+    REF 3d4f87ab5b9ba4c720cedf1f219cc0884038b140 # chromium/4472
+    SHA512 30970d38770c2f9eee0b7fb9f9553e4c0b38877a47dccf7c87f912cba7822c6dd5a7728b66a5fefeee2281c250299638f24122f41f464be986105084112fec0d
     # On update check headers against opengl-registry
     PATCHES
         001-fix-uwp.patch
@@ -27,8 +27,30 @@ vcpkg_from_github(
 )
 
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt DESTINATION ${SOURCE_PATH})
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/commit.h DESTINATION ${SOURCE_PATH})
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/commit.h DESTINATION ${SOURCE_PATH}/src/common)
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/angle_commit.h DESTINATION ${SOURCE_PATH})
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/angle_commit.h DESTINATION ${SOURCE_PATH}/src/common)
+
+function(checkout_in_path_with_patches PATH URL REF PATCHES)
+    if(EXISTS "${PATH}")
+        return()
+    endif()
+    
+    vcpkg_from_git(
+        OUT_SOURCE_PATH DEP_SOURCE_PATH
+        URL "${URL}"
+        REF "${REF}"
+        PATCHES ${PATCHES}
+    )
+    file(RENAME "${DEP_SOURCE_PATH}" "${PATH}")
+    file(REMOVE_RECURSE "${DEP_SOURCE_PATH}")
+endfunction()
+
+checkout_in_path_with_patches(
+    "${SOURCE_PATH}/third_party/zlib"
+    "https://chromium.googlesource.com/chromium/src/third_party/zlib"
+    "09490503d0f201b81e03f5ca0ab8ba8ee76d4a8e"
+    "third-party-zlib-far-undef.patch"
+)
 
 vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
