@@ -1890,7 +1890,7 @@
     },
     "exiv2": {
       "baseline": "0.27.3",
-      "port-version": 4
+      "port-version": 5
     },
     "expat": {
       "baseline": "2.4.1",
