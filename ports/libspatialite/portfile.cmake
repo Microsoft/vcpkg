@@ -21,6 +21,8 @@ if (VCPKG_TARGET_IS_WINDOWS)
       set(LIBXML2_LIBS_DBG "${CURRENT_INSTALLED_DIR}/debug/lib/libxml2.lib")
       set(LIBRTTOPO_LIBS_REL "${CURRENT_INSTALLED_DIR}/lib/librttopo.lib")
       set(LIBRTTOPO_LIBS_DBG "${CURRENT_INSTALLED_DIR}/debug/lib/librttopo.lib")
+      set(PROJ_LIBS_REL "${CURRENT_INSTALLED_DIR}/lib/proj.lib")
+      set(PROJ_LIBS_DBG "${CURRENT_INSTALLED_DIR}/debug/lib/proj_d.lib")
   else()
       set(GEOS_LIBS_REL "${CURRENT_INSTALLED_DIR}/lib/geos_c.lib ${CURRENT_INSTALLED_DIR}/lib/geos.lib")
       set(GEOS_LIBS_DBG "${CURRENT_INSTALLED_DIR}/debug/lib/geos_cd.lib ${CURRENT_INSTALLED_DIR}/debug/lib/geosd.lib")
@@ -28,6 +30,8 @@ if (VCPKG_TARGET_IS_WINDOWS)
       set(LIBXML2_LIBS_DBG "${CURRENT_INSTALLED_DIR}/debug/lib/libxml2.lib ${CURRENT_INSTALLED_DIR}/debug/lib/lzmad.lib ws2_32.lib")
       set(LIBRTTOPO_LIBS_REL "${CURRENT_INSTALLED_DIR}/lib/librttopo.lib")
       set(LIBRTTOPO_LIBS_DBG "${CURRENT_INSTALLED_DIR}/debug/lib/librttopo.lib")
+      set(PROJ_LIBS_REL "${CURRENT_INSTALLED_DIR}/lib/proj.lib ${CURRENT_INSTALLED_DIR}/lib/tiff.lib ${CURRENT_INSTALLED_DIR}/lib/jpeg.lib ole32.lib shell32.lib")
+      set(PROJ_LIBS_DBG "${CURRENT_INSTALLED_DIR}/debug/lib/proj_d.lib ${CURRENT_INSTALLED_DIR}/debug/lib/tiffd.lib ${CURRENT_INSTALLED_DIR}/debug/lib/jpegd.lib ole32.lib shell32.lib")
   endif()
 
   set(LIBS_ALL_DBG
@@ -39,7 +43,7 @@ if (VCPKG_TARGET_IS_WINDOWS)
       ${LIBXML2_LIBS_DBG} \
       ${GEOS_LIBS_DBG} \
       ${LIBRTTOPO_LIBS_DBG} \
-      ${CURRENT_INSTALLED_DIR}/debug/lib/proj_d.lib ole32.lib shell32.lib"
+      ${PROJ_LIBS_DBG}"
   )
   set(LIBS_ALL_REL
       "${CURRENT_INSTALLED_DIR}/lib/iconv.lib \
@@ -50,7 +54,7 @@ if (VCPKG_TARGET_IS_WINDOWS)
       ${LIBXML2_LIBS_REL} \
       ${GEOS_LIBS_REL} \
       ${LIBRTTOPO_LIBS_REL} \
-      ${CURRENT_INSTALLED_DIR}/lib/proj.lib ole32.lib shell32.lib"
+      ${PROJ_LIBS_REL}"
   )
 
   string(REPLACE "/" "\\\\" INST_DIR ${CURRENT_PACKAGES_DIR})
@@ -63,8 +67,6 @@ if (VCPKG_TARGET_IS_WINDOWS)
 
   vcpkg_install_nmake(
       SOURCE_PATH ${SOURCE_PATH}
-      OPTIONS
-          "CL_FLAGS=/DACCEPT_USE_OF_DEPRECATED_PROJ_API_H"
       OPTIONS_RELEASE
           ${OPTIONS_RELEASE}
       OPTIONS_DEBUG
