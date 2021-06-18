@@ -9,7 +9,7 @@ vcpkg_from_github(
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
-	benchmark SPDLOG_BUILD_BENCH
+        benchmark SPDLOG_BUILD_BENCH
 )
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" SPDLOG_BUILD_SHARED)
