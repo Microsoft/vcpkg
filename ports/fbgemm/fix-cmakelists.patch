@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 6f19a16..3c758d2 100644
+index 6f19a16..22a3f91 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -6,7 +6,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
@@ -124,7 +124,7 @@ index 6f19a16..3c758d2 100644
  endif()
  
  if(USE_SANITIZER)
-@@ -239,9 +219,7 @@ target_include_directories(fbgemm BEFORE
+@@ -239,11 +219,9 @@ target_include_directories(fbgemm BEFORE
      PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}>
      PUBLIC $<BUILD_INTERFACE:${FBGEMM_SOURCE_DIR}/include>)
  
@@ -133,14 +133,31 @@ index 6f19a16..3c758d2 100644
 -add_dependencies(fbgemm asmjit cpuinfo)
 +target_link_libraries(fbgemm PUBLIC asmjit::asmjit unofficial::cpuinfo::cpuinfo)
  
- install(TARGETS fbgemm EXPORT fbgemmLibraryConfig
+-install(TARGETS fbgemm EXPORT fbgemmLibraryConfig
++install(TARGETS fbgemm EXPORT fbgemm-config
    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-@@ -254,7 +232,7 @@ install(FILES ${FBGEMM_PUBLIC_HEADERS}
- install(EXPORT fbgemmLibraryConfig DESTINATION share/cmake/fbgemm
-   FILE fbgemmLibraryConfig.cmake)
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}) #For windows
+@@ -251,10 +229,10 @@ install(TARGETS fbgemm EXPORT fbgemmLibraryConfig
+ install(FILES ${FBGEMM_PUBLIC_HEADERS}
+   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/fbgemm")
+ 
+-install(EXPORT fbgemmLibraryConfig DESTINATION share/cmake/fbgemm
+-  FILE fbgemmLibraryConfig.cmake)
++install(EXPORT fbgemm-config DESTINATION ${CMAKE_INSTALL_PREFIX}/share/cmake/fbgemm
++  FILE fbgemm-config.cmake)
  
 -if(MSVC)
 +if(FALSE)
    if(FBGEMM_LIBRARY_TYPE STREQUAL "shared")
      install(
        FILES $<TARGET_PDB_FILE:fbgemm> $<TARGET_PDB_FILE:asmjit>
+@@ -265,7 +243,7 @@ if(MSVC)
+ endif()
+ 
+ #Make project importable from the build directory
+-#export(TARGETS fbgemm asmjit FILE fbgemmLibraryConfig.cmake)
++#export(TARGETS fbgemm asmjit FILE fbgemm-config.cmake)
+ 
+ if(FBGEMM_BUILD_TESTS)
+   add_subdirectory(test)

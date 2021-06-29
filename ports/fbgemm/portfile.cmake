@@ -6,24 +6,28 @@ vcpkg_find_acquire_program(PYTHON3)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/fbgemm
-    REF 51bc2ecc7086980fd9e6190163b04486cd37ac2a
-    SHA512 43e59ff25ec9365061be6a8db7ec592f096e74897e338dd3e17401f2188986cf3b7e26f82f7c1e2adf34496fb32cb4b50d40731bee3bf9fa5b1f2ac92a09e671
+    REF d4a6222bf4700b80271798ed391651c9e0dab490
+    SHA512 56d44d8d98bc160c45595da0136e990018dd51cd8e828d073eedc52ae150c2007838e18612569f84df0b14e96c1fc3e44cef5d7f84d00b72d511492297005271
+    HEAD_REF master
     PATCHES
         fix-cmakelists.patch
 )
 
-vcpkg_configure_cmake(
+vcpkg_cmake_configure(
     SOURCE_PATH ${SOURCE_PATH}
-    PREFER_NINJA
     OPTIONS
-        -DUSE_SANITIZER=OFF
         -DFBGEMM_BUILD_TESTS=OFF
         -DFBGEMM_BUILD_BENCHMARKS=OFF
         -DPYTHON_EXECUTABLE=${PYTHON3} # inject the path instead of find_package(Python)
 )
-vcpkg_install_cmake()
+vcpkg_cmake_install()
 vcpkg_copy_pdbs()
-vcpkg_fixup_cmake_targets(CONFIG_PATH share/cmake/${PORT})
+vcpkg_cmake_config_fixup(CONFIG_PATH share/cmake/${PORT})
 
 file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
-file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include)
+# note: libtorch uses this private header
+file(INSTALL ${SOURCE_PATH}/src/RefImplementations.h
+     DESTINATION ${CURRENT_PACKAGES_DIR}/include/fbgemm/src
+)
+
+file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include ${CURRENT_PACKAGES_DIR}/debug/share)
