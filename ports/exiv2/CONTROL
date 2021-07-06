@@ -1,7 +1,7 @@
 Source: exiv2
 Version: 0.27.3
-Port-Version: 4
-Build-Depends: zlib, libiconv, gettext
+Port-Version: 5
+Build-Depends: zlib, libiconv
 Description: Image metadata library and tools
 Homepage: https://www.exiv2.org
 Supports: !uwp
@@ -15,3 +15,7 @@ Build-Depends: expat
 
 Feature: video
 Description: Build video support into library
+
+Feature: nls
+Description: Build native language support
+Build-Depends: gettext
