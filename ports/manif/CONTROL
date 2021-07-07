@@ -1,0 +1,5 @@
+Source: manif
+Version: 0.0.3
+Homepage: https://github.com/artivis/manif
+Description: A small header-only library for Lie theory.
+Build-Depends: eigen3
