@@ -6521,7 +6521,7 @@
       "port-version": 0
     },
     "vcglib": {
-      "baseline": "1.0.1",
+      "baseline": "2020.09",
       "port-version": 0
     },
     "vcpkg-cmake": {
