@@ -68,15 +68,15 @@ This command supplies many common arguments to CMake. To see the full list, exam
 #]===]
 
 function(vcpkg_configure_cmake)
-    if(Z_VCPKG_CMAKE_CONFIGURE_GUARD)
-        message(FATAL_ERROR "The ${PORT} port already depends on vcpkg-cmake; using both vcpkg-cmake and vcpkg_configure_cmake in the same port is unsupported.")
-    endif()
-
     cmake_parse_arguments(PARSE_ARGV 0 arg
-        "PREFER_NINJA;DISABLE_PARALLEL_CONFIGURE;NO_CHARSET_FLAG"
+        "PREFER_NINJA;DISABLE_PARALLEL_CONFIGURE;NO_CHARSET_FLAG;Z_GET_CMAKE_VARS_USAGE"
         "SOURCE_PATH;GENERATOR;LOGNAME"
         "OPTIONS;OPTIONS_DEBUG;OPTIONS_RELEASE"
     )
+
+    if(NOT arg_Z_GET_CMAKE_VARS_USAGE AND Z_VCPKG_CMAKE_CONFIGURE_GUARD)
+        message(FATAL_ERROR "The ${PORT} port already depends on vcpkg-cmake; using both vcpkg-cmake and vcpkg_configure_cmake in the same port is unsupported.")
+    endif()
 
     if(NOT VCPKG_PLATFORM_TOOLSET)
         message(FATAL_ERROR "Vcpkg has been updated with VS2017 support; "
@@ -320,7 +320,11 @@ function(vcpkg_configure_cmake)
         file(MAKE_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/vcpkg-parallel-configure)
         file(WRITE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/vcpkg-parallel-configure/build.ninja "${_contents}")
 
-        message(STATUS "Configuring ${TARGET_TRIPLET}")
+        if(arg_Z_GET_CMAKE_VARS_USAGE)
+            message(STATUS "Getting CMake variables for ${TARGET_TRIPLET}")
+        else()
+            message(STATUS "Configuring ${TARGET_TRIPLET}")
+        endif()
         vcpkg_execute_required_process(
             COMMAND ninja -v
             WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/vcpkg-parallel-configure
@@ -328,7 +332,11 @@ function(vcpkg_configure_cmake)
         )
     else()
         if(NOT DEFINED VCPKG_BUILD_TYPE OR VCPKG_BUILD_TYPE STREQUAL "debug")
-            message(STATUS "Configuring ${TARGET_TRIPLET}-dbg")
+            if(arg_Z_GET_CMAKE_VARS_USAGE)
+                message(STATUS "Getting CMake variables for ${TARGET_TRIPLET}")
+            else()
+                message(STATUS "Configuring ${TARGET_TRIPLET}-rel")
+            endif()
             file(MAKE_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg)
             vcpkg_execute_required_process(
                 COMMAND ${dbg_command}
@@ -338,7 +346,11 @@ function(vcpkg_configure_cmake)
         endif()
 
         if(NOT DEFINED VCPKG_BUILD_TYPE OR VCPKG_BUILD_TYPE STREQUAL "release")
-            message(STATUS "Configuring ${TARGET_TRIPLET}-rel")
+            if(arg_Z_GET_CMAKE_VARS_USAGE)
+                message(STATUS "Getting CMake variables for ${TARGET_TRIPLET}-rel")
+            else()
+                message(STATUS "Configuring ${TARGET_TRIPLET}-rel")
+            endif()
             file(MAKE_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
             vcpkg_execute_required_process(
                 COMMAND ${rel_command}
@@ -348,5 +360,7 @@ function(vcpkg_configure_cmake)
         endif()
     endif()
 
-    set(Z_VCPKG_CMAKE_GENERATOR "${GENERATOR}" PARENT_SCOPE)
+    if(NOT arg_Z_GET_CMAKE_VARS_USAGE)
+        set(Z_VCPKG_CMAKE_GENERATOR "${GENERATOR}" PARENT_SCOPE)
+    endif()
 endfunction()
