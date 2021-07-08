@@ -1,13 +1,11 @@
-set(BOTAN_VERSION 2.16.0)
+set(BOTAN_VERSION 2.17.3)
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO randombit/botan
-    REF 82a20c67bd54b8c6c75f32bd31dea5b12f3d7e67 # 2.16.0
-    SHA512 42b8dac0a6b44afee14e8ba928b323790b8d90395ba70b4919b3d033e5b9073706355c2263c2a9e66357fa6d4af4c85430c93a65cfdaa79f1c83c89940619a66
+    REF 2.17.3
+    SHA512 6c85850a664e24e664717960cbda48804d46617cb0734a2a17d47ca7f8b5013063d69c7b4bde88d538ec5fbac5ba670eea761365ef3f99fcd833d22ab4bcce33
     HEAD_REF master
-    PATCHES
-        fix-generate-build-path.patch
 )
 
 if(CMAKE_HOST_WIN32)
@@ -51,7 +49,8 @@ else()
 endif()
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
-    amalgamation BOTAN_AMALGAMATION
+    FEATURES
+        amalgamation BOTAN_AMALGAMATION
 )
 
 function(BOTAN_BUILD BOTAN_BUILD_TYPE)
@@ -81,7 +80,8 @@ function(BOTAN_BUILD BOTAN_BUILD_TYPE)
                             "--distribution-info=vcpkg ${TARGET_TRIPLET}"
                             --prefix=${BOTAN_FLAG_PREFIX}
                             --with-pkg-config
-                            --link-method=copy)
+                            --link-method=copy
+                            --with-debug-info)
     if(CMAKE_HOST_WIN32)
         list(APPEND configure_arguments ${BOTAN_MSVC_RUNTIME}${BOTAN_MSVC_RUNTIME_SUFFIX})
     endif()
@@ -128,9 +128,9 @@ set(cli_exe_name "botan")
 if(CMAKE_HOST_WIN32)
     set(cli_exe_name "botan-cli.exe")
 endif()
+
 file(RENAME ${CURRENT_PACKAGES_DIR}/bin/${cli_exe_name} ${CURRENT_PACKAGES_DIR}/tools/botan/${cli_exe_name})
 file(REMOVE ${CURRENT_PACKAGES_DIR}/debug/bin/${cli_exe_name})
-
 file(RENAME ${CURRENT_PACKAGES_DIR}/include/botan-2/botan ${CURRENT_PACKAGES_DIR}/include/botan)
 
 file(REMOVE_RECURSE
@@ -146,7 +146,13 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL static)
 endif()
 
 vcpkg_copy_pdbs()
-vcpkg_copy_tool_dependencies(${CURRENT_PACKAGES_DIR}/tools/botan)
+vcpkg_copy_tool_dependencies(${CURRENT_PACKAGES_DIR}/tools/${PORT})
 
-file(RENAME ${CURRENT_PACKAGES_DIR}/share/botan-${BOTAN_VERSION}/ ${CURRENT_PACKAGES_DIR}/share/botan/)
-file(RENAME ${CURRENT_PACKAGES_DIR}/share/botan/license.txt ${CURRENT_PACKAGES_DIR}/share/botan/copyright)
+file(RENAME ${CURRENT_PACKAGES_DIR}/share/botan-${BOTAN_VERSION}/ ${CURRENT_PACKAGES_DIR}/share/${PORT}/)
+file(RENAME ${CURRENT_PACKAGES_DIR}/share/botan/license.txt ${CURRENT_PACKAGES_DIR}/share/${PORT}/copyright)
+
+# Install package configuration file
+file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/botanConfig.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT})
+
+# Handle copyright
+file(INSTALL ${SOURCE_PATH}/license.txt DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
