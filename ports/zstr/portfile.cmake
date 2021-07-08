@@ -9,7 +9,8 @@ vcpkg_from_github(
 # Install source files
 file(INSTALL ${SOURCE_PATH}/src/strict_fstream.hpp
      ${SOURCE_PATH}/src/zstr.hpp
-     DESTINATION ${CURRENT_PACKAGES_DIR}/include/${PORT})
+     ${SOURCE_PATH}/src/zstr_make_unique_polyfill.h
+     DESTINATION ${CURRENT_PACKAGES_DIR}/include)
 
 # Install license
 file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
