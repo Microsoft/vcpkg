@@ -4377,7 +4377,7 @@
       "port-version": 0
     },
     "nrf-ble-driver": {
-      "baseline": "4.1.2",
+      "baseline": "4.1.4",
       "port-version": 0
     },
     "nsync": {
