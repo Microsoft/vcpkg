@@ -1,0 +1,36 @@
+{
+  "name": "seastar",
+  "version-string": "20.05.0",
+  "description": "High performance server-side application framework",
+  "homepage": "https://github.com/scylladb/seastar",
+  "documentation": "http://docs.seastar.io/master/index.html",
+  "license": "Apache-2.0",
+  "supports": "linux & x64",
+  "dependencies": [
+    "boost-asio",
+    "boost-filesystem",
+    "boost-lockfree",
+    "boost-program-options",
+    "boost-test",
+    "boost-thread",
+    "boost-variant",
+    "c-ares",
+    "cryptopp",
+    "fmt",
+    "hwloc",
+    "libxml2",
+    "lz4",
+    "numactl",
+    "protobuf",
+    "ragel",
+    "yaml-cpp"
+  ],
+  "features": {
+    "dpdk": {
+      "description": "Use DPDK network backend",
+      "dependencies": [
+        "dpdk"
+      ]
+    }
+  }
+}
