@@ -68,6 +68,13 @@ function(v8_fetch)
   endforeach()
 endfunction()
 
+set(is_clang "false")
+if($ENV{CXX} MATCHES "clang")
+    message(STATUS "Detected clang compiler at CXX")
+    set(is_clang "true")
+    set(clang_vars "clang_use_chrome_plugins=false")
+endif()
+
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://chromium.googlesource.com/v8/v8.git
@@ -107,7 +114,13 @@ v8_fetch(
         URL https://chromium.googlesource.com/chromium/src/third_party/markupsafe.git
         REF 8f45f5cfa0009d2a70589bcda0349b8cb2b72783
         SOURCE ${SOURCE_PATH})
-
+if(is_clang)
+	v8_fetch(
+        	DESTINATION tools/clang
+	        URL https://chromium.googlesource.com/chromium/src/tools/clang.git
+        	REF ba668f13d135f1d01faf9b03c9a05f5877ac3f51
+	        SOURCE ${SOURCE_PATH})
+endif()
 vcpkg_execute_required_process(
         COMMAND ${PYTHON2} build/util/lastchange.py -o build/util/LASTCHANGE
         WORKING_DIRECTORY ${SOURCE_PATH}
@@ -127,6 +140,9 @@ if(UNIX)
     set(UNIX_CURRENT_INSTALLED_DIR ${CURRENT_INSTALLED_DIR})
     set(LIBS "-ldl -lpthread")
     set(REQUIRES ", gmodule-2.0, gobject-2.0, gthread-2.0")
+    if(is_clang)
+      set(custom_toolchain "custom_toolchain=\"//build/toolchain/linux/unbundle:default\"")
+    endif()
 elseif(WIN32)
     execute_process(COMMAND cygpath "${CURRENT_INSTALLED_DIR}" OUTPUT_VARIABLE UNIX_CURRENT_INSTALLED_DIR)
     string(STRIP ${UNIX_CURRENT_INSTALLED_DIR} UNIX_CURRENT_INSTALLED_DIR)
@@ -146,10 +162,9 @@ else()
 endif()
 
 message(STATUS "Generating v8 build files. Please wait...")
-
 vcpkg_configure_gn(
     SOURCE_PATH ${SOURCE_PATH}
-    OPTIONS "is_component_build=${is_component_build} target_cpu=\"${VCPKG_TARGET_ARCHITECTURE}\" v8_monolithic=${v8_monolithic} v8_use_external_startup_data=${v8_use_external_startup_data} use_sysroot=false is_clang=false use_custom_libcxx=false v8_enable_verify_heap=false icu_use_data_file=false" 
+    OPTIONS "is_component_build=${is_component_build} target_cpu=\"${VCPKG_TARGET_ARCHITECTURE}\" v8_monolithic=${v8_monolithic} v8_use_external_startup_data=${v8_use_external_startup_data} use_sysroot=false is_clang=${is_clang} use_custom_libcxx=false v8_enable_verify_heap=false icu_use_data_file=false ${custom_toolchain} ${clang_vars}"
     OPTIONS_DEBUG "is_debug=true enable_iterator_debugging=true pkg_config_libdir=\"${UNIX_CURRENT_INSTALLED_DIR}/debug/lib/pkgconfig\""
     OPTIONS_RELEASE "is_debug=false enable_iterator_debugging=false pkg_config_libdir=\"${UNIX_CURRENT_INSTALLED_DIR}/lib/pkgconfig\""
 )
