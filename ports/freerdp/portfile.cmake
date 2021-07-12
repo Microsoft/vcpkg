@@ -1,8 +1,8 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO FreeRDP/FreeRDP
-    REF d2ba84a6885f57674098fe8e76c5f99d880e580d #2.2.0
-    SHA512 3f166213039358dc0cab09b8895e6cff8a7a9c7e7711ea5652604fc6070b1524aba9fec3b860f4deb1f54ea1f17709ab25ffb108116e2914800e892efb9fb9ae
+    REF c3df0be63953ed98525d9b736ba878ad733de059 #2.3.2
+    SHA512 622d2a1f90f5ef2212dd345a0e51b57a16c69a2972acefdc1cb1d062100ad559932330cca5883e9711a96c032ae56f6f7a084ad48760d763fc38f86cf0fa3bce
     HEAD_REF master
     PATCHES
         DontInstallSystemRuntimeLibs.patch
@@ -31,6 +31,7 @@ file(WRITE "${SOURCE_PATH}/.source_version" "${SOURCE_VERSION}-vcpkg")
 file(REMOVE ${SOURCE_PATH}/cmake/FindOpenSSL.cmake) # Remove outdated Module
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    FEATURES
     urbdrc CHANNEL_URBDRC
 )
 
@@ -46,92 +47,16 @@ vcpkg_configure_cmake(
 vcpkg_install_cmake()
 vcpkg_copy_pdbs()
 
-file(GLOB_RECURSE TOOLS_RELEASE ${CURRENT_PACKAGES_DIR}/bin/*.exe)
+vcpkg_copy_tools(TOOL_NAMES wfreerdp winpr-hash winpr-makecert AUTO_CLEAN)
 
-if(TOOLS_RELEASE)
-    file(COPY ${TOOLS_RELEASE} DESTINATION ${CURRENT_PACKAGES_DIR}/tools/${PORT})
+vcpkg_fixup_cmake_targets(CONFIG_PATH lib/cmake/FreeRDP-Client2 TARGET_PATH share/freerdp-client DO_NOT_DELETE_PARENT_CONFIG_PATH)
+vcpkg_fixup_cmake_targets(CONFIG_PATH lib/cmake/FreeRDP2 TARGET_PATH share/freerdp DO_NOT_DELETE_PARENT_CONFIG_PATH)
+vcpkg_fixup_cmake_targets(CONFIG_PATH lib/cmake/WinPR2 TARGET_PATH share/winpr)
 
-    file(GLOB_RECURSE TOOLS_DEBUG ${CURRENT_PACKAGES_DIR}/debug/bin/*.exe)
-    file(REMOVE ${TOOLS_RELEASE} ${TOOLS_DEBUG})
-endif()
-
-vcpkg_copy_tool_dependencies(${CURRENT_PACKAGES_DIR}/tools/${PORT})
-
-if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
-    file(GLOB_RECURSE FREERDP_DLLS "${CURRENT_PACKAGES_DIR}/lib/*.dll")
-    foreach(FREERDP_DLL ${FREERDP_DLLS})
-        file(COPY ${FREERDP_DLL} DESTINATION ${CURRENT_PACKAGES_DIR}/bin)
-        file(REMOVE ${FREERDP_DLL})
-    endforeach()
-
-    file(GLOB_RECURSE FREERDP_DLLS "${CURRENT_PACKAGES_DIR}/debug/lib/*.dll")
-    foreach(FREERDP_DLL ${FREERDP_DLLS})
-        file(COPY ${FREERDP_DLL} DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin)
-        file(REMOVE ${FREERDP_DLL})
-    endforeach()
-else()
-    file(GLOB_RECURSE FREERDP_TOOLS "${CURRENT_PACKAGES_DIR}/bin/*")
-    foreach(FREERDP_TOOL ${FREERDP_TOOLS})
-        file(COPY ${FREERDP_TOOL} DESTINATION ${CURRENT_PACKAGES_DIR}/tools/${PORT})
-        file(REMOVE ${FREERDP_TOOL})
-    endforeach()
-    file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/bin ${CURRENT_PACKAGES_DIR}/debug/bin)
-endif()
-
-foreach(PACKAGE FreeRDP-Client2 FreeRDP2 WinPR2)
-    file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/lib/cmake/${PACKAGE}_temp)
-    file(RENAME ${CURRENT_PACKAGES_DIR}/lib/cmake/${PACKAGE} ${CURRENT_PACKAGES_DIR}/lib/cmake/${PACKAGE}_temp/${PACKAGE})
-    file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/debug/lib/cmake/${PACKAGE}_temp)
-    file(RENAME ${CURRENT_PACKAGES_DIR}/debug/lib/cmake/${PACKAGE} ${CURRENT_PACKAGES_DIR}/debug/lib/cmake/${PACKAGE}_temp/${PACKAGE})
-endforeach()
-
-vcpkg_fixup_cmake_targets(CONFIG_PATH lib/cmake/FreeRDP-Client2_temp/FreeRDP-Client2 TARGET_PATH share/FreeRDP-Client)
-vcpkg_fixup_cmake_targets(CONFIG_PATH lib/cmake/FreeRDP2_temp/FreeRDP2 TARGET_PATH share/FreeRDP)
-vcpkg_fixup_cmake_targets(CONFIG_PATH lib/cmake/WinPR2_temp/WinPR2 TARGET_PATH share/WinPR)
-
-vcpkg_replace_string(${CURRENT_PACKAGES_DIR}/share/WinPR/WinPRTargets-debug.cmake
-    "debug/lib/winpr2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-    "debug/bin/winpr2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-)
-vcpkg_replace_string(${CURRENT_PACKAGES_DIR}/share/WinPR/WinPRTargets-debug.cmake
-    "debug/lib/winpr-tools2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-    "debug/bin/winpr-tools2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-)
-vcpkg_replace_string(${CURRENT_PACKAGES_DIR}/share/WinPR/WinPRTargets-release.cmake
-    "lib/winpr2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-    "bin/winpr2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-)
-vcpkg_replace_string(${CURRENT_PACKAGES_DIR}/share/WinPR/WinPRTargets-release.cmake
-    "lib/winpr-tools2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-    "bin/winpr-tools2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-)
-vcpkg_replace_string(${CURRENT_PACKAGES_DIR}/share/FreeRDP/FreeRDPTargets-debug.cmake
-    "debug/lib/freerdp2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-    "debug/bin/freerdp2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-)
-vcpkg_replace_string(${CURRENT_PACKAGES_DIR}/share/FreeRDP/FreeRDPTargets-release.cmake
-    "lib/freerdp2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-    "bin/freerdp2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-)
-vcpkg_replace_string(${CURRENT_PACKAGES_DIR}/share/FreeRDP-Client/FreeRDP-ClientTargets-debug.cmake
-    "debug/lib/freerdp-client2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-    "debug/bin/freerdp-client2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-)
-vcpkg_replace_string(${CURRENT_PACKAGES_DIR}/share/FreeRDP-Client/FreeRDP-ClientTargets-release.cmake
-    "lib/freerdp-client2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-    "bin/freerdp-client2${VCPKG_TARGET_SHARED_LIBRARY_SUFFIX}"
-)
-
-if(VCPKG_TARGET_IS_WINDOWS AND VCPKG_LIBRARY_LINKAGE STREQUAL "static")
-    file(GLOB OBJS ${CURRENT_PACKAGES_DIR}/debug/*.lib)
-    file(REMOVE ${OBJS})
-    file(GLOB OBJS ${CURRENT_PACKAGES_DIR}/*.lib)
-    file(REMOVE ${OBJS})
-endif()
+# vcpkg's openssl package does not produce libssl.pc and libcrypto.pc
+file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig ${CURRENT_PACKAGES_DIR}/lib/pkgconfig)
 
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include
-                    ${CURRENT_PACKAGES_DIR}/debug/share
-                    ${CURRENT_PACKAGES_DIR}/debug/lib/cmake
-                    ${CURRENT_PACKAGES_DIR}/lib/cmake)
+                    ${CURRENT_PACKAGES_DIR}/debug/share)
 
 file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
