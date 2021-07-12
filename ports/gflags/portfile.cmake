@@ -13,6 +13,12 @@ vcpkg_from_github(
         fix_cmake_config.patch
 )
 
+vcpkg_check_features(
+    OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    FEATURES
+        "target-namespace" GFLAGS_USE_TARGET_NAMESPACE
+)
+
 vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
     PREFER_NINJA
@@ -33,6 +39,14 @@ endif()
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include)
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/share)
 
-file(INSTALL ${SOURCE_PATH}/COPYING.txt DESTINATION ${CURRENT_PACKAGES_DIR}/share/gflags RENAME copyright)
+set(_GFLAGS_USE_TARGET_NAMESPACE ${GFLAGS_USE_TARGET_NAMESPACE})
+set(_GFLAGS_TARGET_NAME "gflags")
+if ("${GFLAGS_USE_TARGET_NAMESPACE}")
+    set(_GFLAGS_TARGET_NAME "gflags::${_GFLAGS_TARGET_NAME}")
+endif()
+
+configure_file("${CMAKE_CURRENT_LIST_DIR}/vcpkg-cmake-wrapper.cmake.in" "${CURRENT_PACKAGES_DIR}/share/${PORT}/vcpkg-cmake-wrapper.cmake" @ONLY)
+configure_file("${CMAKE_CURRENT_LIST_DIR}/usage.in" "${CURRENT_PACKAGES_DIR}/share/${PORT}/usage" @ONLY)
+file(INSTALL "${SOURCE_PATH}/COPYING.txt" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
 
 vcpkg_copy_pdbs()
