@@ -2840,6 +2840,10 @@
       "baseline": "20200924",
       "port-version": 1
     },
+    "keychain": {
+      "baseline": "1.2.0",
+      "port-version": 0
+    },
     "keystone": {
       "baseline": "0.9.2",
       "port-version": 0
